@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Base ===== */
+@layer base {
+  html {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 16px; /* basis rem — tidak dikunci agar zoom browser bekerja */
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Lexend", sans-serif;
+  }
+
+  body {
+    @apply text-neutral-900 bg-white antialiased;
+  }
+
+  /* Aksesibilitas: focus ring terlihat jelas */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-green-500;
+  }
+
+  /* Pastikan gambar tidak meluap kontainer */
+  img {
+    @apply max-w-full;
+  }
+}
+
+/* ===== Components ===== */
+@layer components {
+  /* Tombol utama */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-brand-green-500 text-white font-semibold rounded-lg
+           hover:bg-brand-green-600 active:scale-95 transition-all duration-150
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green-500
+           disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px];
+  }
+
+  /* Tombol sekunder */
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-brand-gold-500 text-neutral-900 font-semibold rounded-lg
+           hover:bg-brand-gold-600 active:scale-95 transition-all duration-150
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold-500
+           disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px];
+  }
+
+  /* Tombol outline */
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 border-2 border-brand-green-500 text-brand-green-500 font-semibold rounded-lg
+           hover:bg-brand-green-50 active:scale-95 transition-all duration-150
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green-500
+           disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px];
+  }
+
+  /* Tombol aksen merah (CTA krusial) */
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-brand-red-500 text-white font-semibold rounded-lg
+           hover:bg-red-700 active:scale-95 transition-all duration-150
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red-500
+           disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px];
+  }
+
+  /* Card publik */
+  .card {
+    @apply bg-white rounded-card shadow-sm border border-neutral-200 overflow-hidden;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full px-4 py-3 border border-neutral-200 rounded-lg text-neutral-900 placeholder-neutral-400
+           focus:outline-none focus:border-brand-green-500 focus:ring-2 focus:ring-brand-green-500/20
+           transition-colors duration-150 min-h-[44px];
+  }
+
+  /* Label form */
+  .form-label {
+    @apply block text-sm font-semibold text-neutral-900 mb-1.5;
+  }
+
+  /* Error message form */
+  .form-error {
+    @apply text-sm text-state-error mt-1;
+  }
+
+  /* Container standar */
+  .container-site {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section spacing */
+  .section {
+    @apply py-12 lg:py-20;
+  }
+}
+
+/* ===== Rich Text Content (konten berita dari TipTap) ===== */
+.prose-ipm {
+  @apply text-neutral-900 leading-relaxed;
+}
+.prose-ipm h1, .prose-ipm h2, .prose-ipm h3 {
+  @apply font-display font-bold text-brand-green-900 mt-6 mb-3;
+}
+.prose-ipm h1 { @apply text-3xl; }
+.prose-ipm h2 { @apply text-2xl; }
+.prose-ipm h3 { @apply text-xl; }
+.prose-ipm p  { @apply mb-4; }
+.prose-ipm a  { @apply text-brand-blue-500 underline hover:text-brand-blue-600; }
+.prose-ipm ul, .prose-ipm ol { @apply pl-6 mb-4 space-y-1; }
+.prose-ipm ul { @apply list-disc; }
+.prose-ipm ol { @apply list-decimal; }
+.prose-ipm blockquote {
+  @apply border-l-4 border-brand-gold-500 pl-4 italic text-neutral-600 my-4;
+}
+.prose-ipm img {
+  @apply rounded-lg my-4 w-full object-cover;
+}
