@@ -1,3 +1,4 @@
+{/* frontend/features/berita/pages/admin/AdminBeritaPage.jsx (lengkap) */}
 import { useState } from "react";
 import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Button from "@/shared/components/ui/Button";
@@ -19,15 +20,13 @@ import {
   KATEGORI_BERITA_LABELS,
 } from "@/shared/constants/statusEnum";
 
-// Sub-view: "list" | "create" | "edit"
 export default function AdminBeritaPage() {
   const [view,     setView]     = useState("list");
   const [editData, setEditData] = useState(null);
   const [page,     setPage]     = useState(1);
   const [deleteId, setDeleteId] = useState(null);
 
-  // Ambil semua status (admin bisa lihat draft/terjadwal/dipublikasikan)
-  const { data, isLoading } = useBeritaList({ page, per_page: 10, all_status: true });
+  const { data, isLoading } = useBeritaList({ page, limit: 10 });
 
   const createMutation = useCreateBerita();
   const updateMutation = useUpdateBerita(editData?.id);
@@ -50,7 +49,6 @@ export default function AdminBeritaPage() {
     setDeleteId(null);
   };
 
-  // ── Form view ────────────────────────────────────────────────────────────
   if (view === "create" || view === "edit") {
     return (
       <AdminLayout title={view === "create" ? "Tambah Berita" : "Edit Berita"}>
@@ -76,46 +74,36 @@ export default function AdminBeritaPage() {
     );
   }
 
-  // ── List view ────────────────────────────────────────────────────────────
   return (
     <AdminLayout title="Manajemen Berita">
-      {/* Header aksi */}
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-neutral-500">
-          {data?.meta?.total_count ?? 0} total berita
+          {data?.data?.meta?.total ?? 0} total berita
         </p>
-        <Button onClick={() => setView("create")}>
-          + Tambah Berita
-        </Button>
+        <Button onClick={() => setView("create")}>+ Tambah Berita</Button>
       </div>
 
-      {/* Tabel */}
       <div className="bg-white rounded-card border border-neutral-200 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50">
               {["Judul", "Kategori", "Status", "Dipublikasikan", "Aksi"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left font-semibold text-neutral-700 whitespace-nowrap">
-                  {h}
-                </th>
+                <th key={h} className="px-4 py-3 text-left font-semibold text-neutral-700 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {isLoading && <SkeletonTableRows rows={8} cols={5} />}
 
-            {!isLoading && data?.results?.length === 0 && (
+            {!isLoading && data?.data?.results?.length === 0 && (
               <tr>
                 <td colSpan={5} className="py-12">
-                  <EmptyState
-                    title="Belum ada berita"
-                    message="Klik 'Tambah Berita' untuk membuat berita pertama."
-                  />
+                  <EmptyState title="Belum ada berita" message="Klik 'Tambah Berita' untuk membuat berita pertama." />
                 </td>
               </tr>
             )}
 
-            {!isLoading && data?.results?.map((b) => (
+            {!isLoading && data?.data?.results?.map((b) => (
               <tr key={b.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                 <td className="px-4 py-3 font-medium text-neutral-900 max-w-xs">
                   <span className="line-clamp-2">{b.judul}</span>
@@ -125,10 +113,7 @@ export default function AdminBeritaPage() {
                   {KATEGORI_BERITA_LABELS[b.kategori] ?? b.kategori}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <Badge
-                    label={STATUS_BERITA_LABELS[b.status] ?? b.status}
-                    colorClass={STATUS_BERITA_COLORS[b.status]}
-                  />
+                  <Badge label={STATUS_BERITA_LABELS[b.status] ?? b.status} colorClass={STATUS_BERITA_COLORS[b.status]} />
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-neutral-600">
                   {b.published_at ? formatShort(b.published_at) : "—"}
@@ -155,13 +140,8 @@ export default function AdminBeritaPage() {
         </table>
       </div>
 
-      {/* Pagination */}
-      <Pagination
-        meta={data?.meta}
-        onPageChange={setPage}
-      />
+      <Pagination meta={data?.data?.meta} onPageChange={setPage} />
 
-      {/* Modal konfirmasi hapus */}
       {deleteId && (
         <ConfirmDeleteModal
           onConfirm={handleDelete}

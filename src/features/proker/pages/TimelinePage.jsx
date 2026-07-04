@@ -1,3 +1,4 @@
+{/* frontend/features/proker/pages/TimelinePage.jsx (lengkap) */}
 import { useState } from "react";
 import PublicLayout from "@/shared/components/layout/PublicLayout";
 import TimelineItem from "../components/TimelineItem";
@@ -22,16 +23,13 @@ export default function TimelinePage() {
     statusFilter ? { status: statusFilter } : {}
   );
 
-  const prokerList = data?.data ?? [];
+  const prokerList = data?.data?.results ?? [];
 
   return (
     <PublicLayout>
-      {/* Header */}
       <section className="bg-brand-green-500 py-12">
         <div className="container-site">
-          <h1 className="font-display font-bold text-white text-3xl mb-2">
-            Program Kerja
-          </h1>
+          <h1 className="font-display font-bold text-white text-3xl mb-2">Program Kerja</h1>
           <p className="text-brand-green-50 text-sm">
             Timeline kegiatan dan program kerja PW IPM Jawa Barat periode aktif.
           </p>
@@ -40,7 +38,6 @@ export default function TimelinePage() {
 
       <section className="container-site section">
         <div className="max-w-3xl mx-auto">
-          {/* Filter status */}
           <div className="flex flex-wrap gap-2 mb-10" role="group" aria-label="Filter status program kerja">
             {STATUS_FILTERS.map(({ value, label }) => {
               const active = statusFilter === value;
@@ -50,10 +47,7 @@ export default function TimelinePage() {
                   onClick={() => setStatusFilter(value)}
                   aria-pressed={active}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-150 min-h-[44px]
-                    ${active
-                      ? "bg-brand-green-500 text-white"
-                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                    }`}
+                    ${active ? "bg-brand-green-500 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"}`}
                 >
                   {label}
                 </button>
@@ -61,7 +55,6 @@ export default function TimelinePage() {
             })}
           </div>
 
-          {/* Loading skeleton */}
           {isLoading && (
             <div className="space-y-6">
               {[...Array(5)].map((_, i) => (
@@ -78,28 +71,17 @@ export default function TimelinePage() {
           )}
 
           {isError && (
-            <EmptyState
-              title="Gagal memuat program kerja"
-              message="Terjadi kesalahan saat mengambil data."
-            />
+            <EmptyState title="Gagal memuat program kerja" message="Terjadi kesalahan saat mengambil data." />
           )}
 
           {!isLoading && !isError && prokerList.length === 0 && (
-            <EmptyState
-              title="Belum ada program kerja"
-              message="Belum ada program kerja yang tersedia untuk filter ini."
-            />
+            <EmptyState title="Belum ada program kerja" message="Belum ada program kerja yang tersedia untuk filter ini." />
           )}
 
-          {/* Timeline */}
           {!isLoading && !isError && prokerList.length > 0 && (
             <div>
               {prokerList.map((proker, idx) => (
-                <TimelineItem
-                  key={proker.id}
-                  proker={proker}
-                  isLast={idx === prokerList.length - 1}
-                />
+                <TimelineItem key={proker.id} proker={proker} isLast={idx === prokerList.length - 1} />
               ))}
             </div>
           )}

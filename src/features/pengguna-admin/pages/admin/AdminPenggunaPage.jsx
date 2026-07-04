@@ -1,3 +1,4 @@
+{/* frontend/features/pengguna-admin/pages/admin/AdminPenggunaPage.jsx (lengkap) */}
 import { useState } from "react";
 import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Button from "@/shared/components/ui/Button";
@@ -12,11 +13,9 @@ import {
 } from "../../hooks/usePengguna";
 import { penggunaService } from "../../services/penggunaService";
 import { ROLES, ROLE_LABELS } from "@/shared/constants/roles";
-import { formatDateTime } from "@/shared/utils/formatDate";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import { useQueryClient } from "@tanstack/react-query";
 
-// ── Modal generik ────────────────────────────────────────────────────────────
 function Modal({ title, children, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -40,15 +39,12 @@ function Modal({ title, children, onClose }) {
   );
 }
 
-// ── Form tambah / edit pengguna admin ────────────────────────────────────────
 const DEFAULT_FORM = { nama: "", email: "", password: "", role: ROLES.EDITOR };
 
 function PenggunaForm({ initialData, onSubmit, onCancel, isSubmitting }) {
   const isEdit = Boolean(initialData);
   const [form, setForm] = useState(
-    isEdit
-      ? { nama: initialData.nama, role: initialData.role }
-      : DEFAULT_FORM
+    isEdit ? { nama: initialData.nama, role: initialData.role } : DEFAULT_FORM
   );
   const [showPass, setShowPass] = useState(false);
 
@@ -57,60 +53,31 @@ function PenggunaForm({ initialData, onSubmit, onCancel, isSubmitting }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
-      {/* Nama */}
       <div>
-        <label className="form-label">
-          Nama Lengkap <span className="text-state-error">*</span>
-        </label>
-        <input
-          name="nama"
-          type="text"
-          required
-          value={form.nama}
-          onChange={handleChange}
-          placeholder="Nama admin"
-          className="input-field"
-        />
+        <label className="form-label">Nama Lengkap <span className="text-state-error">*</span></label>
+        <input name="nama" type="text" required value={form.nama} onChange={handleChange}
+          placeholder="Nama admin" className="input-field" />
       </div>
 
-      {/* Email — hanya saat buat akun baru */}
       {!isEdit && (
         <div>
-          <label className="form-label">
-            Email <span className="text-state-error">*</span>
-          </label>
-          <input
-            name="email"
-            type="email"
-            required
-            value={form.email}
-            onChange={handleChange}
-            placeholder="admin@ipmjabar.or.id"
-            className="input-field"
-          />
+          <label className="form-label">Email <span className="text-state-error">*</span></label>
+          <input name="email" type="email" required value={form.email} onChange={handleChange}
+            placeholder="admin@ipmjabar.or.id" className="input-field" />
         </div>
       )}
 
-      {/* Password — hanya saat buat akun baru */}
       {!isEdit && (
         <div>
-          <label className="form-label">
-            Password Awal <span className="text-state-error">*</span>
-          </label>
+          <label className="form-label">Password Awal <span className="text-state-error">*</span></label>
           <div className="relative">
             <input
-              name="password"
-              type={showPass ? "text" : "password"}
-              required
-              minLength={8}
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Minimal 8 karakter"
-              className="input-field pr-12"
+              name="password" type={showPass ? "text" : "password"} required minLength={8}
+              value={form.password} onChange={handleChange}
+              placeholder="Minimal 8 karakter" className="input-field pr-12"
             />
             <button
-              type="button"
-              onClick={() => setShowPass((p) => !p)}
+              type="button" onClick={() => setShowPass((p) => !p)}
               aria-label={showPass ? "Sembunyikan password" : "Tampilkan password"}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
@@ -128,11 +95,8 @@ function PenggunaForm({ initialData, onSubmit, onCancel, isSubmitting }) {
         </div>
       )}
 
-      {/* Role */}
       <div>
-        <label className="form-label">
-          Role <span className="text-state-error">*</span>
-        </label>
+        <label className="form-label">Role <span className="text-state-error">*</span></label>
         <select name="role" value={form.role} onChange={handleChange} className="input-field">
           {Object.entries(ROLE_LABELS).map(([val, lbl]) => (
             <option key={val} value={val}>{lbl}</option>
@@ -150,27 +114,25 @@ function PenggunaForm({ initialData, onSubmit, onCancel, isSubmitting }) {
   );
 }
 
-// ── Page utama ───────────────────────────────────────────────────────────────
 export default function AdminPenggunaPage() {
   const { user: currentUser } = useAuthContext();
   const qc = useQueryClient();
 
   const { data, isLoading }    = usePenggunaList();
-  const list = data?.data ?? [];
+  const list = data?.data?.results ?? [];
 
-  const [formModal,     setFormModal]     = useState(null);  // null | { mode, data? }
-  const [deleteTarget,  setDeleteTarget]  = useState(null);  // id
-  const [togglingId,    setTogglingId]    = useState(null);  // id sedang proses toggle
+  const [formModal,     setFormModal]     = useState(null);
+  const [deleteTarget,  setDeleteTarget]  = useState(null);
+  const [togglingId,    setTogglingId]    = useState(null);
 
   const createMutation = useCreatePengguna();
-  const updateMutation = useUpdatePengguna(formModal?.data?.id);
+  const updateMutation = useUpdatePengguna(formModal?.data?.uid);
   const deleteMutation = useDeletePengguna();
 
-  // Toggle aktif/nonaktif — langsung pakai service, lalu invalidate
   const handleToggleActive = async (pengguna) => {
-    setTogglingId(pengguna.id);
+    setTogglingId(pengguna.uid);
     try {
-      await penggunaService.toggleActive(pengguna.id, !pengguna.is_active);
+      await penggunaService.toggleActive(pengguna.uid, !pengguna.status_aktif);
       qc.invalidateQueries({ queryKey: ["pengguna", "list"] });
     } finally {
       setTogglingId(null);
@@ -185,74 +147,52 @@ export default function AdminPenggunaPage() {
 
   return (
     <AdminLayout title="Manajemen Pengguna Admin">
-      {/* Info akses */}
       <div className="mb-4 p-3 bg-brand-gold-50 border border-brand-gold-300 rounded-lg text-sm text-neutral-700">
-        Halaman ini hanya dapat diakses oleh{" "}
-        <strong>Super Admin</strong>. Kelola akun editor dan admin di sini.
+        Halaman ini hanya dapat diakses oleh <strong>Super Admin</strong>. Kelola akun editor dan admin di sini.
       </div>
 
-      {/* Tombol tambah */}
       <div className="flex justify-end mb-6">
-        <Button onClick={() => setFormModal({ mode: "create" })}>
-          + Tambah Admin
-        </Button>
+        <Button onClick={() => setFormModal({ mode: "create" })}>+ Tambah Admin</Button>
       </div>
 
-      {/* Tabel */}
       <div className="bg-white rounded-card border border-neutral-200 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50">
-              {["Nama", "Email", "Role", "Terakhir Masuk", "Status", "Aksi"].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left font-semibold text-neutral-700 whitespace-nowrap"
-                >
-                  {h}
-                </th>
+              {["Nama", "Email", "Role", "Status", "Aksi"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left font-semibold text-neutral-700 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading && <SkeletonTableRows rows={5} cols={6} />}
+            {isLoading && <SkeletonTableRows rows={5} cols={5} />}
 
             {!isLoading && list.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10">
-                  <EmptyState
-                    title="Belum ada pengguna admin"
-                    message="Klik '+ Tambah Admin' untuk membuat akun pertama."
-                  />
+                <td colSpan={5} className="py-10">
+                  <EmptyState title="Belum ada pengguna admin" message="Klik '+ Tambah Admin' untuk membuat akun pertama." />
                 </td>
               </tr>
             )}
 
             {!isLoading && list.map((p) => {
               const isSelf       = p.uid === currentUser?.uid;
-              const isToggling   = togglingId === p.id;
+              const isToggling   = togglingId === p.uid;
 
               return (
-                <tr
-                  key={p.id}
-                  className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
-                >
-                  {/* Nama */}
+                <tr key={p.uid} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                   <td className="px-4 py-3 font-medium text-neutral-900">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-brand-blue-500/10 flex items-center justify-center text-brand-blue-500 font-bold text-xs shrink-0">
                         {p.nama?.charAt(0)?.toUpperCase()}
                       </div>
                       <span>{p.nama}</span>
-                      {isSelf && (
-                        <span className="text-xs text-neutral-400">(Anda)</span>
-                      )}
+                      {isSelf && <span className="text-xs text-neutral-400">(Anda)</span>}
                     </div>
                   </td>
 
-                  {/* Email */}
                   <td className="px-4 py-3 text-neutral-600">{p.email}</td>
 
-                  {/* Role */}
                   <td className="px-4 py-3">
                     <Badge
                       label={ROLE_LABELS[p.role] ?? p.role}
@@ -264,27 +204,19 @@ export default function AdminPenggunaPage() {
                     />
                   </td>
 
-                  {/* Last sign-in */}
-                  <td className="px-4 py-3 text-neutral-600 text-xs whitespace-nowrap">
-                    {p.last_sign_in ? formatDateTime(p.last_sign_in) : "Belum pernah"}
-                  </td>
-
-                  {/* Status */}
                   <td className="px-4 py-3">
                     <Badge
-                      label={p.is_active ? "Aktif" : "Nonaktif"}
+                      label={p.status_aktif ? "Aktif" : "Nonaktif"}
                       colorClass={
-                        p.is_active
+                        p.status_aktif
                           ? "bg-brand-green-50 text-brand-green-500"
                           : "bg-neutral-200 text-neutral-500"
                       }
                     />
                   </td>
 
-                  {/* Aksi */}
                   <td className="px-4 py-3">
                     <div className="flex gap-2 whitespace-nowrap">
-                      {/* Edit */}
                       <button
                         disabled={isSelf}
                         onClick={() => setFormModal({ mode: "edit", data: p })}
@@ -293,21 +225,17 @@ export default function AdminPenggunaPage() {
                         Edit
                       </button>
 
-                      {/* Toggle aktif */}
                       <button
                         disabled={isSelf || isToggling}
                         onClick={() => handleToggleActive(p)}
                         className="text-brand-gold-600 hover:text-brand-gold-700 font-semibold text-xs px-2 py-1 rounded hover:bg-brand-gold-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        {isToggling
-                          ? "…"
-                          : p.is_active ? "Nonaktifkan" : "Aktifkan"}
+                        {isToggling ? "…" : p.status_aktif ? "Nonaktifkan" : "Aktifkan"}
                       </button>
 
-                      {/* Hapus */}
                       <button
                         disabled={isSelf}
-                        onClick={() => setDeleteTarget(p.id)}
+                        onClick={() => setDeleteTarget(p.uid)}
                         className="text-state-error font-semibold text-xs px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Hapus
@@ -321,12 +249,8 @@ export default function AdminPenggunaPage() {
         </table>
       </div>
 
-      {/* Modal form tambah / edit */}
       {formModal && (
-        <Modal
-          title={formModal.mode === "create" ? "Tambah Admin Baru" : "Edit Admin"}
-          onClose={() => setFormModal(null)}
-        >
+        <Modal title={formModal.mode === "create" ? "Tambah Admin Baru" : "Edit Admin"} onClose={() => setFormModal(null)}>
           <PenggunaForm
             initialData={formModal.data ?? null}
             onSubmit={handleSubmit}
@@ -334,24 +258,18 @@ export default function AdminPenggunaPage() {
             isSubmitting={createMutation.isPending || updateMutation.isPending}
           />
           {(createMutation.isError || updateMutation.isError) && (
-            <p className="form-error mt-3 text-center">
-              Gagal menyimpan data. Coba lagi.
-            </p>
+            <p className="form-error mt-3 text-center">Gagal menyimpan data. Coba lagi.</p>
           )}
         </Modal>
       )}
 
-      {/* Modal konfirmasi hapus */}
       {deleteTarget && (
         <Modal title="Hapus Akun Admin?" onClose={() => setDeleteTarget(null)}>
           <p className="text-sm text-neutral-600 mb-6">
-            Akun yang dihapus tidak dapat dikembalikan. Admin tersebut tidak
-            akan dapat login lagi.
+            Akun yang dihapus tidak dapat dikembalikan. Admin tersebut tidak akan dapat login lagi.
           </p>
           <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
-              Batal
-            </Button>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Batal</Button>
             <Button
               variant="danger"
               loading={deleteMutation.isPending}
@@ -364,9 +282,7 @@ export default function AdminPenggunaPage() {
             </Button>
           </div>
           {deleteMutation.isError && (
-            <p className="form-error mt-3 text-center">
-              Gagal menghapus akun. Coba lagi.
-            </p>
+            <p className="form-error mt-3 text-center">Gagal menghapus akun. Coba lagi.</p>
           )}
         </Modal>
       )}

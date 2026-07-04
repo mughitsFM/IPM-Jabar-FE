@@ -1,3 +1,4 @@
+{/* frontend/features/berita/components/NewsForm.jsx (lengkap) */}
 import { useState, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -10,7 +11,6 @@ import {
   KATEGORI_BERITA, KATEGORI_BERITA_LABELS,
   STATUS_BERITA, STATUS_BERITA_LABELS,
 } from "@/shared/constants/statusEnum";
-import { beritaService } from "../services/beritaService";
 
 const DEFAULT_VALUES = {
   judul:       "",
@@ -18,25 +18,15 @@ const DEFAULT_VALUES = {
   kategori:    KATEGORI_BERITA.KEGIATAN,
   status:      STATUS_BERITA.DRAFT,
   published_at:"",
-  thumbnail_url:"",
   konten:      "",
 };
 
-/**
- * NewsForm — form buat/edit berita di panel admin.
- *
- * @param {object}   initialData  - Data awal saat mode edit (null = mode buat)
- * @param {function} onSubmit     - Dipanggil dengan payload siap kirim ke API
- * @param {boolean}  isSubmitting - Tombol submit state loading
- */
 export default function NewsForm({ initialData = null, onSubmit, isSubmitting = false }) {
   const [form, setForm]   = useState(initialData ?? DEFAULT_VALUES);
   const [thumbFile, setThumbFile] = useState(null);
   const [thumbError, setThumbError] = useState(null);
   const [thumbPreview, setThumbPreview] = useState(initialData?.thumbnail_url ?? null);
-  const [uploadingThumb, setUploadingThumb] = useState(false);
 
-  // TipTap editor
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -48,7 +38,6 @@ export default function NewsForm({ initialData = null, onSubmit, isSubmitting = 
       setForm((prev) => ({ ...prev, konten: ed.getHTML() })),
   });
 
-  // Auto-generate slug dari judul (hanya saat mode buat)
   useEffect(() => {
     if (!initialData) {
       setForm((prev) => ({ ...prev, slug: slugify(prev.judul) }));
@@ -60,7 +49,7 @@ export default function NewsForm({ initialData = null, onSubmit, isSubmitting = 
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleThumbChange = async (e) => {
+  const handleThumbChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const { valid, error } = validateGambar(file);
@@ -68,47 +57,33 @@ export default function NewsForm({ initialData = null, onSubmit, isSubmitting = 
     setThumbError(null);
     setThumbFile(file);
     setThumbPreview(URL.createObjectURL(file));
-
-    // Upload segera, simpan URL
-    try {
-      setUploadingThumb(true);
-      const { thumbnail_url } = await beritaService.uploadThumbnail(file);
-      setForm((prev) => ({ ...prev, thumbnail_url }));
-    } catch {
-      setThumbError("Gagal mengunggah gambar. Coba lagi.");
-    } finally {
-      setUploadingThumb(false);
-    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ ...form, konten: editor?.getHTML() ?? form.konten });
+    onSubmit({
+      ...form,
+      konten: editor?.getHTML() ?? form.konten,
+      thumbnailFile: thumbFile,
+    });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Judul */}
       <div>
         <label htmlFor="judul" className="form-label">Judul <span className="text-state-error">*</span></label>
         <input id="judul" name="judul" type="text" required
           value={form.judul} onChange={handleChange}
-          placeholder="Judul berita"
-          className="input-field"
-        />
+          placeholder="Judul berita" className="input-field" />
       </div>
 
-      {/* Slug */}
       <div>
         <label htmlFor="slug" className="form-label">Slug URL</label>
-        <input id="slug" name="slug" type="text"
-          value={form.slug} onChange={handleChange}
-          className="input-field font-mono text-sm"
-        />
+        <input id="slug" name="slug" type="text" value={form.slug} onChange={handleChange}
+          className="input-field font-mono text-sm" />
         <p className="text-xs text-neutral-400 mt-1">Dibuat otomatis dari judul. Edit jika perlu.</p>
       </div>
 
-      {/* Kategori + Status (2 kolom) */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="kategori" className="form-label">Kategori <span className="text-state-error">*</span></label>
@@ -128,18 +103,14 @@ export default function NewsForm({ initialData = null, onSubmit, isSubmitting = 
         </div>
       </div>
 
-      {/* Waktu publikasi (hanya jika terjadwal) */}
       {form.status === STATUS_BERITA.TERJADWAL && (
         <div>
           <label htmlFor="published_at" className="form-label">Waktu Publikasi</label>
           <input id="published_at" name="published_at" type="datetime-local"
-            value={form.published_at} onChange={handleChange}
-            className="input-field"
-          />
+            value={form.published_at} onChange={handleChange} className="input-field" />
         </div>
       )}
 
-      {/* Thumbnail */}
       <div>
         <label className="form-label">Thumbnail</label>
         {thumbPreview && (
@@ -151,14 +122,11 @@ export default function NewsForm({ initialData = null, onSubmit, isSubmitting = 
           onChange={handleThumbChange}
           className="block text-sm text-neutral-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-brand-green-50 file:text-brand-green-500 file:font-semibold hover:file:bg-brand-green-100"
         />
-        {uploadingThumb && <p className="text-xs text-brand-blue-500 mt-1">Mengunggah gambar…</p>}
         {thumbError && <p className="form-error">{thumbError}</p>}
       </div>
 
-      {/* Rich Text Editor */}
       <div>
         <label className="form-label">Konten Berita <span className="text-state-error">*</span></label>
-        {/* Toolbar TipTap sederhana */}
         {editor && (
           <div className="flex flex-wrap gap-1 p-2 bg-neutral-50 border border-neutral-200 border-b-0 rounded-t-lg">
             {[
@@ -183,11 +151,8 @@ export default function NewsForm({ initialData = null, onSubmit, isSubmitting = 
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
-        <Button type="button" variant="ghost" onClick={() => window.history.back()}>
-          Batal
-        </Button>
+        <Button type="button" variant="ghost" onClick={() => window.history.back()}>Batal</Button>
         <Button type="submit" loading={isSubmitting}>
           {initialData ? "Simpan Perubahan" : "Publikasikan"}
         </Button>

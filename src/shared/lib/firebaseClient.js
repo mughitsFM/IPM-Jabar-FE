@@ -1,9 +1,10 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 /**
  * Konfigurasi Firebase — nilai diambil dari environment variables Vite.
- * Salin .env.example ke .env dan isi dengan nilai dari Firebase Console.
+ * Vite otomatis memuat .env.development saat `npm run dev`
+ * dan .env.production saat `npm run build`.
  */
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,5 +20,17 @@ const firebaseApp = initializeApp(firebaseConfig);
 
 // Export Firebase Auth instance
 export const auth = getAuth(firebaseApp);
+
+// ── Firebase Auth Emulator (development) ───────────────────────────────────
+// Diaktifkan lewat VITE_USE_FIREBASE_EMULATOR=true di .env.development.
+// WAJIB dipanggil sebelum signIn/signOut pertama kali dipakai di aplikasi,
+// makanya diletakkan di sini (module ini di-import paling awal oleh
+// firebaseAuthService & axiosClient).
+if (import.meta.env.VITE_USE_FIREBASE_EMULATOR === "true") {
+  const host = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099";
+  connectAuthEmulator(auth, `http://${host}`, { disableWarnings: true });
+  // eslint-disable-next-line no-console
+  console.info(`🔧 Firebase Auth Emulator aktif: http://${host}`);
+}
 
 export default firebaseApp;

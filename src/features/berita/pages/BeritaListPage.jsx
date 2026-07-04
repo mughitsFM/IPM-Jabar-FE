@@ -1,3 +1,4 @@
+{/* frontend/features/berita/pages/BeritaListPage.jsx (lengkap) */}
 import { useState } from "react";
 import PublicLayout from "@/shared/components/layout/PublicLayout";
 import NewsCard from "../components/NewsCard";
@@ -13,27 +14,20 @@ export default function BeritaListPage() {
 
   return (
     <PublicLayout>
-      {/* Page Header */}
       <section className="bg-brand-green-500 py-12">
         <div className="container-site">
-          <h1 className="font-display font-bold text-white text-3xl mb-2">
-            Berita &amp; Informasi
-          </h1>
+          <h1 className="font-display font-bold text-white text-3xl mb-2">Berita &amp; Informasi</h1>
           <p className="text-brand-green-50 text-sm">
             Informasi kegiatan, pengumuman, dan sebaran surat resmi PW IPM Jawa Barat.
           </p>
         </div>
       </section>
 
-      {/* Konten */}
       <section className="container-site py-10">
-        {/* Filter kategori */}
         <NewsFilterBar value={filters} onChange={setFilters} />
 
-        {/* State loading */}
         {isLoading && <SkeletonCardGrid count={6} />}
 
-        {/* State error */}
         {isError && (
           <EmptyState
             title="Gagal memuat berita"
@@ -42,26 +36,20 @@ export default function BeritaListPage() {
           />
         )}
 
-        {/* State kosong */}
-        {!isLoading && !isError && data?.results?.length === 0 && (
-          <EmptyState
-            title="Belum ada berita"
-            message="Belum ada berita yang dipublikasikan untuk kategori ini."
-          />
+        {!isLoading && !isError && data?.data?.results?.length === 0 && (
+          <EmptyState title="Belum ada berita" message="Belum ada berita yang dipublikasikan untuk kategori ini." />
         )}
 
-        {/* Grid kartu berita */}
-        {!isLoading && !isError && data?.results?.length > 0 && (
+        {!isLoading && !isError && data?.data?.results?.length > 0 && (
           <>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {data.results.map((berita) => (
+              {data.data.results.map((berita) => (
                 <NewsCard key={berita.id} data={berita} />
               ))}
             </div>
 
-            {/* Pagination */}
             <Pagination
-              meta={data.meta}
+              meta={data.data.meta}
               onPageChange={(page) => {
                 setFilters((prev) => ({ ...prev, page }));
                 window.scrollTo({ top: 0, behavior: "smooth" });

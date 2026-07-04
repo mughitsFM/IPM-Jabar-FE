@@ -1,37 +1,54 @@
 import { useState } from "react";
 import Button from "@/shared/components/ui/Button";
-import {
-  STATUS_PROKER,
-  STATUS_PROKER_LABELS,
-} from "@/shared/constants/statusEnum";
+import { useBidangOptions } from "../hooks/useJabatan";   // ⬅️ tambahan import
 
 const DEFAULT = {
-  nama:            "",
+  nama_kegiatan:   "",
   deskripsi:       "",
   bidang:          "",
   tanggal_mulai:   "",
   tanggal_selesai: "",
-  status:          STATUS_PROKER.AKAN_DATANG,
 };
 
 /**
  * ProkerForm — form buat/edit program kerja.
  */
-export default function ProkerForm({ initialData = null, onSubmit, onCancel, isSubmitting = false }) {
+export default function ProkerForm({ initialData = null, onSubmit, onCancel, isSubmitting = false, error = null }) {
   const [form, setForm] = useState(initialData ?? DEFAULT);
+  const { data: bidangData, isLoading: isBidangLoading } = useBidangOptions();  // ⬅️ baru
+  const bidangOptions = bidangData?.data ?? [];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+    // ⬅️ BARU: normalisasi tanggal date-only -> ISO datetime sebelum dikirim ke backend
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit({
+      ...form,
+      tanggal_mulai: form.tanggal_mulai
+        ? `${form.tanggal_mulai}T00:00:00`
+        : "",
+      tanggal_selesai: form.tanggal_selesai
+        ? `${form.tanggal_selesai}T23:59:59`
+        : "",
+    });
+  };
+
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (// ⬅️ baru: banner pesan error dari backend
+        <div className="rounded-lg bg-red-50 border border-red-200 text-state-error text-sm px-4 py-3">
+          {error}
+        </div>
+      )}
       {/* Nama */}
       <div>
         <label htmlFor="pk-nama" className="form-label">Nama Program Kerja <span className="text-state-error">*</span></label>
-        <input id="pk-nama" name="nama" type="text" required
-          value={form.nama} onChange={handleChange}
+        <input id="pk-nama" name="nama_kegiatan" type="text" required
+          value={form.nama_kegiatan} onChange={handleChange}
           placeholder="Nama program kerja"
           className="input-field"
         />
@@ -39,12 +56,22 @@ export default function ProkerForm({ initialData = null, onSubmit, onCancel, isS
 
       {/* Bidang */}
       <div>
-        <label htmlFor="pk-bidang" className="form-label">Bidang / Departemen</label>
-        <input id="pk-bidang" name="bidang" type="text"
+        <label htmlFor="pk-bidang" className="form-label">
+          Bidang / Departemen <span className="text-state-error">*</span>
+        </label>
+        <select
+          id="pk-bidang" name="bidang" required
           value={form.bidang} onChange={handleChange}
-          placeholder="Misal: Bidang Kaderisasi"
           className="input-field"
-        />
+          disabled={isBidangLoading}
+        >
+          <option value="" disabled>
+            {isBidangLoading ? "Memuat bidang..." : "Pilih bidang"}
+          </option>
+          {bidangOptions.map((b) => (
+            <option key={b.id} value={b.nama}>{b.nama}</option>
+          ))}
+        </select>
       </div>
 
       {/* Deskripsi */}
@@ -70,19 +97,10 @@ export default function ProkerForm({ initialData = null, onSubmit, onCancel, isS
           <label htmlFor="pk-selesai" className="form-label">Tanggal Selesai</label>
           <input id="pk-selesai" name="tanggal_selesai" type="date"
             value={form.tanggal_selesai} onChange={handleChange}
+            min={form.tanggal_mulai || undefined}   // ⬅️ baru: cegah pilih tanggal < mulai
             className="input-field"
           />
         </div>
-      </div>
-
-      {/* Status */}
-      <div>
-        <label htmlFor="pk-status" className="form-label">Status</label>
-        <select id="pk-status" name="status" value={form.status} onChange={handleChange} className="input-field">
-          {Object.entries(STATUS_PROKER_LABELS).map(([val, lbl]) => (
-            <option key={val} value={val}>{lbl}</option>
-          ))}
-        </select>
       </div>
 
       {/* Actions */}

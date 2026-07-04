@@ -1,3 +1,4 @@
+{/* frontend/features/pengaduan/pages/admin/AdminPengaduanPage.jsx (lengkap) */}
 import { useState } from "react";
 import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Badge from "@/shared/components/ui/Badge";
@@ -11,13 +12,24 @@ import {
   useUpdateStatusPengaduan,
 } from "../../hooks/usePengaduan";
 import {
-  STATUS_PENGADUAN,
   STATUS_PENGADUAN_LABELS,
   STATUS_PENGADUAN_COLORS,
 } from "@/shared/constants/statusEnum";
 import { formatDateTime } from "@/shared/utils/formatDate";
 
-// Modal generik
+/**
+ * Sisipkan flag fl_attachment ke URL Cloudinary supaya file langsung
+ * di-download oleh browser (Content-Disposition: attachment), bukan
+ * dibuka di tab baru. Aman dipakai untuk resource_type apa pun
+ * (image/raw) karena fl_attachment adalah flag delivery, bukan transformasi
+ * konten.
+ */
+function toCloudinaryDownloadUrl(url) {
+  if (!url) return url;
+  if (url.includes("fl_attachment")) return url;
+  return url.replace("/upload/", "/upload/fl_attachment/");
+}
+
 function Modal({ title, children, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -37,7 +49,6 @@ function Modal({ title, children, onClose }) {
   );
 }
 
-/** Panel detail pengaduan dengan dropdown ubah status */
 function DetailPanel({ id, onClose }) {
   const { data, isLoading } = usePengaduanDetail(id);
   const pengaduan = data?.data;
@@ -49,45 +60,41 @@ function DetailPanel({ id, onClose }) {
 
       {pengaduan && (
         <>
-          {/* Meta info */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoRow label="Kode" value={<span className="font-mono font-bold text-brand-green-500">{pengaduan.kode_unik}</span>} />
-            <InfoRow label="Jenis" value={<span className="capitalize">{pengaduan.jenis?.replace("_", " ")}</span>} />
-            <InfoRow label="Nama" value={pengaduan.nama} />
+            <InfoRow label="Perihal" value={pengaduan.perihal} />
+            <InfoRow label="Asal Pimpinan" value={pengaduan.asal_pimpinan} />
             <InfoRow label="Email" value={<a href={`mailto:${pengaduan.email}`} className="text-brand-blue-500 underline">{pengaduan.email}</a>} />
-            {pengaduan.no_hp && <InfoRow label="No. HP" value={pengaduan.no_hp} />}
             <InfoRow label="Dikirim" value={formatDateTime(pengaduan.created_at)} />
           </div>
 
-          {/* Pesan */}
           <div>
-            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">Pesan</p>
+            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">Isi</p>
             <p className="text-sm text-neutral-800 bg-neutral-50 rounded-lg p-3 leading-relaxed whitespace-pre-wrap">
-              {pengaduan.pesan}
+              {pengaduan.isi}
             </p>
           </div>
 
-          {/* Lampiran */}
           {pengaduan.lampiran_url && (
             <div>
               <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">Lampiran</p>
               <a
-                href={pengaduan.lampiran_url}
+                href={toCloudinaryDownloadUrl(pengaduan.lampiran_url)}
                 target="_blank"
                 rel="noopener noreferrer"
+                download
                 className="inline-flex items-center gap-2 text-sm text-brand-blue-500 hover:text-brand-blue-600 underline"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
-                Lihat Lampiran
+                Download Lampiran
               </a>
             </div>
           )}
 
           <div className="h-px bg-neutral-100" />
 
-          {/* Ubah status */}
           <div>
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Status Pengaduan</p>
             <div className="flex items-center gap-3 flex-wrap">
@@ -133,15 +140,14 @@ export default function AdminPengaduanPage() {
 
   const { data, isLoading } = usePengaduanList({
     page,
-    per_page: 15,
+    limit: 15,
     ...(statusFilter ? { status: statusFilter } : {}),
   });
 
-  const list = data?.results ?? [];
+  const list = data?.data?.results ?? [];
 
   return (
     <AdminLayout title="Manajemen Pengaduan">
-      {/* Filter status */}
       <div className="flex flex-wrap gap-2 mb-6">
         {[{ value: null, label: "Semua" }, ...Object.entries(STATUS_PENGADUAN_LABELS).map(([v, l]) => ({ value: v, label: l }))].map(({ value, label }) => (
           <button
@@ -158,12 +164,11 @@ export default function AdminPengaduanPage() {
         ))}
       </div>
 
-      {/* Tabel */}
       <div className="bg-white rounded-card border border-neutral-200 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50">
-              {["Kode", "Nama", "Jenis", "Dikirim", "Status", "Aksi"].map((h) => (
+              {["Kode", "Asal Pimpinan", "Perihal", "Dikirim", "Status", "Aksi"].map((h) => (
                 <th key={h} className="px-4 py-3 text-left font-semibold text-neutral-700 whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -182,8 +187,10 @@ export default function AdminPengaduanPage() {
             {!isLoading && list.map((p) => (
               <tr key={p.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                 <td className="px-4 py-3 font-mono font-bold text-brand-green-500 text-xs">{p.kode_unik}</td>
-                <td className="px-4 py-3 font-medium text-neutral-900">{p.nama}</td>
-                <td className="px-4 py-3 text-neutral-600 capitalize whitespace-nowrap">{p.jenis?.replace("_", " ")}</td>
+                <td className="px-4 py-3 font-medium text-neutral-900">{p.asal_pimpinan}</td>
+                <td className="px-4 py-3 text-neutral-600 whitespace-nowrap max-w-xs">
+                  <span className="line-clamp-1">{p.perihal}</span>
+                </td>
                 <td className="px-4 py-3 text-neutral-600 whitespace-nowrap text-xs">{formatDateTime(p.created_at)}</td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <Badge
@@ -205,9 +212,8 @@ export default function AdminPengaduanPage() {
         </table>
       </div>
 
-      <Pagination meta={data?.meta} onPageChange={setPage} />
+      <Pagination meta={data?.data?.meta} onPageChange={setPage} />
 
-      {/* Modal detail */}
       {detailId && (
         <Modal title="Detail Pengaduan" onClose={() => setDetailId(null)}>
           <DetailPanel id={detailId} onClose={() => setDetailId(null)} />

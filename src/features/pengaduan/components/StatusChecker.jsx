@@ -1,3 +1,4 @@
+{/* frontend/features/pengaduan/components/StatusChecker.jsx (lengkap) */}
 import { useState } from "react";
 import Button from "@/shared/components/ui/Button";
 import Badge from "@/shared/components/ui/Badge";
@@ -8,10 +9,6 @@ import {
 } from "@/shared/constants/statusEnum";
 import { formatDateTime } from "@/shared/utils/formatDate";
 
-/**
- * StatusChecker — widget untuk pengguna memeriksa status pengaduannya
- * menggunakan kode unik yang diterima saat pengiriman.
- */
 export default function StatusChecker() {
   const [inputKode, setInputKode] = useState("");
   const [activeKode, setActiveKode] = useState(null);
@@ -38,7 +35,6 @@ export default function StatusChecker() {
         <Button type="submit" loading={isLoading} className="shrink-0">Cek</Button>
       </form>
 
-      {/* Error / tidak ditemukan */}
       {isError && (
         <div className="px-4 py-3 bg-red-50 border border-state-error/30 rounded-lg text-sm text-state-error">
           {error?.response?.status === 404
@@ -47,7 +43,6 @@ export default function StatusChecker() {
         </div>
       )}
 
-      {/* Hasil */}
       {!isLoading && !isError && pengaduan && (
         <div className="bg-white border border-neutral-200 rounded-card p-5 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -67,8 +62,8 @@ export default function StatusChecker() {
 
           <div className="grid gap-2 sm:grid-cols-2 text-sm">
             <div>
-              <p className="text-xs text-neutral-400">Jenis</p>
-              <p className="font-medium text-neutral-900 capitalize">{pengaduan.jenis?.replace("_", " ")}</p>
+              <p className="text-xs text-neutral-400">Perihal</p>
+              <p className="font-medium text-neutral-900">{pengaduan.perihal}</p>
             </div>
             <div>
               <p className="text-xs text-neutral-400">Dikirim</p>
@@ -76,11 +71,11 @@ export default function StatusChecker() {
             </div>
           </div>
 
-          {pengaduan.pesan && (
+          {pengaduan.isi && (
             <div>
-              <p className="text-xs text-neutral-400 mb-1">Pesan</p>
+              <p className="text-xs text-neutral-400 mb-1">Isi</p>
               <p className="text-sm text-neutral-700 bg-neutral-50 rounded-lg p-3 leading-relaxed">
-                {pengaduan.pesan}
+                {pengaduan.isi}
               </p>
             </div>
           )}

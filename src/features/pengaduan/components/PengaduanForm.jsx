@@ -1,27 +1,17 @@
+{/* frontend/features/pengaduan/components/PengaduanForm.jsx (lengkap) */}
 import { useState } from "react";
 import Button from "@/shared/components/ui/Button";
 import { validateLampiran, formatFileSize } from "@/shared/utils/fileValidator";
 import { useSubmitPengaduan } from "../hooks/usePengaduan";
 
-const JENIS_OPTIONS = [
-  { value: "pengaduan",    label: "Pengaduan" },
-  { value: "saran",        label: "Saran / Masukan" },
-  { value: "surat_masuk",  label: "Penerusan Surat Masuk" },
-];
-
 const DEFAULT_FORM = {
-  nama:    "",
-  email:   "",
-  no_hp:   "",
-  jenis:   "pengaduan",
-  pesan:   "",
-  lampiran: null,
+  email:          "",
+  asal_pimpinan:  "",
+  perihal:        "",
+  isi:            "",
+  lampiran:       null,
 };
 
-/**
- * PengaduanForm — form pengiriman pengaduan / surat untuk publik.
- * Setelah sukses menampilkan kode unik untuk tracking.
- */
 export default function PengaduanForm() {
   const [form,        setForm]        = useState(DEFAULT_FORM);
   const [lampiranErr, setLampiranErr] = useState(null);
@@ -54,7 +44,6 @@ export default function PengaduanForm() {
     }
   };
 
-  // ── Tampilan sukses ─────────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="text-center py-8">
@@ -90,26 +79,15 @@ export default function PengaduanForm() {
     );
   }
 
-  // ── Form ────────────────────────────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      {/* Error global */}
       {mutation.isError && (
         <div role="alert" className="px-4 py-3 bg-red-50 border border-state-error/30 rounded-lg text-sm text-state-error">
           Gagal mengirim pengaduan. Periksa koneksi internet dan coba lagi.
         </div>
       )}
 
-      {/* Nama + Email */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="pg-nama" className="form-label">Nama Lengkap <span className="text-state-error">*</span></label>
-          <input id="pg-nama" name="nama" type="text" required
-            value={form.nama} onChange={handleChange}
-            placeholder="Nama Anda"
-            className="input-field"
-          />
-        </div>
         <div>
           <label htmlFor="pg-email" className="form-label">Email <span className="text-state-error">*</span></label>
           <input id="pg-email" name="email" type="email" required
@@ -118,39 +96,34 @@ export default function PengaduanForm() {
             className="input-field"
           />
         </div>
-      </div>
-
-      {/* No. HP + Jenis */}
-      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="pg-hp" className="form-label">No. HP / WhatsApp</label>
-          <input id="pg-hp" name="no_hp" type="tel"
-            value={form.no_hp} onChange={handleChange}
-            placeholder="08xxxxxxxxxx"
+          <label htmlFor="pg-asal" className="form-label">Asal Pimpinan / Organisasi <span className="text-state-error">*</span></label>
+          <input id="pg-asal" name="asal_pimpinan" type="text" required
+            value={form.asal_pimpinan} onChange={handleChange}
+            placeholder="Misal: PD IPM Kab. Bandung"
             className="input-field"
           />
         </div>
-        <div>
-          <label htmlFor="pg-jenis" className="form-label">Jenis <span className="text-state-error">*</span></label>
-          <select id="pg-jenis" name="jenis" value={form.jenis} onChange={handleChange} className="input-field">
-            {JENIS_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
       </div>
 
-      {/* Pesan */}
       <div>
-        <label htmlFor="pg-pesan" className="form-label">Isi Pesan / Pengaduan <span className="text-state-error">*</span></label>
-        <textarea id="pg-pesan" name="pesan" rows={5} required
-          value={form.pesan} onChange={handleChange}
+        <label htmlFor="pg-perihal" className="form-label">Perihal <span className="text-state-error">*</span></label>
+        <input id="pg-perihal" name="perihal" type="text" required
+          value={form.perihal} onChange={handleChange}
+          placeholder="Perihal pengaduan atau surat yang diajukan"
+          className="input-field"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="pg-isi" className="form-label">Isi Pengaduan / Surat <span className="text-state-error">*</span></label>
+        <textarea id="pg-isi" name="isi" rows={5} required
+          value={form.isi} onChange={handleChange}
           placeholder="Tuliskan pengaduan, saran, atau isi surat Anda di sini…"
           className="input-field resize-none"
         />
       </div>
 
-      {/* Lampiran */}
       <div>
         <label className="form-label">
           Lampiran

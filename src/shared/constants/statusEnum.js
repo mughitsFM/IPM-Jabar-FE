@@ -1,3 +1,4 @@
+// frontend/shared/constants/statusEnum.js (lengkap)
 // ── Status Berita ──────────────────────────────────────────────────────────
 export const STATUS_BERITA = {
   DRAFT:          "draft",
@@ -11,7 +12,6 @@ export const STATUS_BERITA_LABELS = {
   [STATUS_BERITA.DIPUBLIKASIKAN]: "Dipublikasikan",
 };
 
-// Tailwind class warna badge sesuai design system BAB 2.2
 export const STATUS_BERITA_COLORS = {
   [STATUS_BERITA.DRAFT]:          "bg-neutral-200 text-neutral-600",
   [STATUS_BERITA.TERJADWAL]:      "bg-brand-blue-500/10 text-brand-blue-500",
@@ -48,6 +48,32 @@ export const STATUS_PROKER_COLORS = {
   [STATUS_PROKER.AKAN_DATANG]: "bg-brand-blue-500/10 text-brand-blue-500",
   [STATUS_PROKER.BERLANGSUNG]: "bg-brand-gold-50 text-brand-gold-600",
   [STATUS_PROKER.SELESAI]:     "bg-brand-green-50 text-brand-green-500",
+};
+
+// ── Bidang Program Kerja ─────────────────────────────────────────────────
+// HARUS persis sama dengan BIDANG_CHOICES di backend/proker/serializers.py
+export const BIDANG_PROKER = {
+  ORGANISASI:           "organisasi",
+  KADER:                "kader",
+  KAJIAN_DAKWAH_ISLAMI: "kajian_dakwah_islami",
+  PERKADERAN:           "perkaderan",
+  HIKMAH:               "hikmah",
+  IMMAWAN:              "immawan",
+  IMMAWATI:             "immawati",
+  MEDIA_KOMUNIKASI:     "media_komunikasi",
+  LAINNYA:              "lainnya",
+};
+
+export const BIDANG_PROKER_LABELS = {
+  [BIDANG_PROKER.ORGANISASI]:          "Organisasi",
+  [BIDANG_PROKER.KADER]:                "Kader",
+  [BIDANG_PROKER.KAJIAN_DAKWAH_ISLAMI]: "Kajian Dakwah Islami",
+  [BIDANG_PROKER.PERKADERAN]:           "Perkaderan",
+  [BIDANG_PROKER.HIKMAH]:               "Hikmah",
+  [BIDANG_PROKER.IMMAWAN]:              "Immawan",
+  [BIDANG_PROKER.IMMAWATI]:             "Immawati",
+  [BIDANG_PROKER.MEDIA_KOMUNIKASI]:     "Media & Komunikasi",
+  [BIDANG_PROKER.LAINNYA]:              "Lainnya",
 };
 
 // ── Status Pengaduan ───────────────────────────────────────────────────────

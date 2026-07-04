@@ -1,10 +1,13 @@
+// frontend/features/berita/hooks/useBeritaMutations.js (lengkap — 1 baris diperbaiki: invalidateList)
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { beritaService } from "../services/beritaService";
 
+// Invalidate prefix ["berita"] saja (bukan ["berita","list"]) supaya query key
+// publik (["berita","list",...]) MAUPUN admin (["berita","admin-list",...])
+// sama-sama disegarkan setelah create/update/delete.
 const invalidateList = (qc) =>
-  qc.invalidateQueries({ queryKey: ["berita", "list"] });
+  qc.invalidateQueries({ queryKey: ["berita"] });
 
-/** Membuat berita baru */
 export function useCreateBerita() {
   const qc = useQueryClient();
   return useMutation({
@@ -13,7 +16,6 @@ export function useCreateBerita() {
   });
 }
 
-/** Mengupdate berita */
 export function useUpdateBerita(id) {
   const qc = useQueryClient();
   return useMutation({
@@ -25,7 +27,6 @@ export function useUpdateBerita(id) {
   });
 }
 
-/** Menghapus berita */
 export function useDeleteBerita() {
   const qc = useQueryClient();
   return useMutation({

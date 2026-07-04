@@ -1,3 +1,4 @@
+// frontend/features/proker/hooks/useProker.js (lengkap)
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { prokerService } from "../services/prokerService";
 
@@ -22,14 +23,6 @@ export function useUpdateProker(id) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload) => prokerService.update(id, payload),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: LIST_KEY }),
-  });
-}
-
-export function useUpdateStatusProker(id) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (status) => prokerService.updateStatus(id, status),
     onSuccess:  () => qc.invalidateQueries({ queryKey: LIST_KEY }),
   });
 }
