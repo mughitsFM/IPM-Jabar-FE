@@ -50,6 +50,14 @@ export const STATUS_PROKER_COLORS = {
   [STATUS_PROKER.SELESAI]:     "bg-brand-green-50 text-brand-green-500",
 };
 
+// Warna solid untuk penanda titik (mis. dot kalender di beranda) — beda dari
+// STATUS_PROKER_COLORS di atas yang untuk background pil/badge (soft/tint).
+export const STATUS_PROKER_DOT_COLORS = {
+  [STATUS_PROKER.AKAN_DATANG]: "bg-brand-blue-500",
+  [STATUS_PROKER.BERLANGSUNG]: "bg-brand-gold-500",
+  [STATUS_PROKER.SELESAI]:     "bg-brand-green-500",
+};
+
 // ── Bidang Program Kerja ─────────────────────────────────────────────────
 // HARUS persis sama dengan BIDANG_CHOICES di backend/proker/serializers.py
 export const BIDANG_PROKER = {
@@ -76,21 +84,64 @@ export const BIDANG_PROKER_LABELS = {
   [BIDANG_PROKER.LAINNYA]:              "Lainnya",
 };
 
-// ── Status Pengaduan ───────────────────────────────────────────────────────
-export const STATUS_PENGADUAN = {
-  DITERIMA: "diterima",
+// ── Level Pimpinan (dari 01-model-role-pimpinan.md §9 — REFERENSI, mungkin
+//    sudah ditambahkan sebelumnya saat implementasi file 01; disertakan lagi
+//    di sini untuk KELENGKAPAN karena dipakai lintas file 05/06/09, mis.
+//    PenerimaPicker di surat-menyurat. Jangan duplikasi bila sudah ada). ────
+export const LEVEL_PIMPINAN = { DAERAH: "daerah", CABANG: "cabang", RANTING: "ranting" };
+export const LEVEL_PIMPINAN_LABELS = {
+  [LEVEL_PIMPINAN.DAERAH]:  "Pimpinan Daerah",
+  [LEVEL_PIMPINAN.CABANG]:  "Pimpinan Cabang",
+  [LEVEL_PIMPINAN.RANTING]: "Pimpinan Ranting",
+};
+export const LEVEL_PIMPINAN_PREFIX = { daerah: "PD", cabang: "PC", ranting: "PR" };
+export function composeLabelPimpinan(level, namaWilayah) {
+  return `${LEVEL_PIMPINAN_PREFIX[level]} IPM ${namaWilayah}`;
+}
+
+// ── Status Artikel Pimpinan (baru — lihat 05-artikel-pimpinan.md) ──────────
+// Alur: draft → diajukan → disetujui (auto-publish ke `berita`)
+//                       └→ revisi / ditolak → (edit) → diajukan lagi
+export const STATUS_ARTIKEL_PIMPINAN = {
+  DRAFT:     "draft",
+  DIAJUKAN:  "diajukan",
+  REVISI:    "revisi",
+  DITOLAK:   "ditolak",
+  DISETUJUI: "disetujui",
+};
+
+export const STATUS_ARTIKEL_PIMPINAN_LABELS = {
+  [STATUS_ARTIKEL_PIMPINAN.DRAFT]:     "Draft",
+  [STATUS_ARTIKEL_PIMPINAN.DIAJUKAN]:  "Diajukan",
+  [STATUS_ARTIKEL_PIMPINAN.REVISI]:    "Perlu Revisi",
+  [STATUS_ARTIKEL_PIMPINAN.DITOLAK]:   "Ditolak",
+  [STATUS_ARTIKEL_PIMPINAN.DISETUJUI]: "Disetujui & Terbit",
+};
+
+export const STATUS_ARTIKEL_PIMPINAN_COLORS = {
+  [STATUS_ARTIKEL_PIMPINAN.DRAFT]:     "bg-neutral-200 text-neutral-600",
+  [STATUS_ARTIKEL_PIMPINAN.DIAJUKAN]:  "bg-brand-blue-500/10 text-brand-blue-500",
+  [STATUS_ARTIKEL_PIMPINAN.REVISI]:    "bg-brand-gold-50 text-brand-gold-600",
+  [STATUS_ARTIKEL_PIMPINAN.DITOLAK]:   "bg-brand-red-500/10 text-brand-red-500",
+  [STATUS_ARTIKEL_PIMPINAN.DISETUJUI]: "bg-brand-green-50 text-brand-green-500",
+};
+
+// ── Status Aspirasi (baru — PENGGANTI TOTAL STATUS_PENGADUAN, lihat
+//    09-aspirasi-revamp.md §3.5) ────────────────────────────────────────────
+export const STATUS_ASPIRASI = {
+  TERKIRIM: "terkirim",
   DIPROSES: "diproses",
-  SELESAI:  "selesai",
+  DIBALAS:  "dibalas",
 };
 
-export const STATUS_PENGADUAN_LABELS = {
-  [STATUS_PENGADUAN.DITERIMA]: "Diterima",
-  [STATUS_PENGADUAN.DIPROSES]: "Diproses",
-  [STATUS_PENGADUAN.SELESAI]:  "Selesai",
+export const STATUS_ASPIRASI_LABELS = {
+  [STATUS_ASPIRASI.TERKIRIM]: "Terkirim",
+  [STATUS_ASPIRASI.DIPROSES]: "Diproses",
+  [STATUS_ASPIRASI.DIBALAS]:  "Sudah Dibalas",
 };
 
-export const STATUS_PENGADUAN_COLORS = {
-  [STATUS_PENGADUAN.DITERIMA]: "bg-brand-blue-500/10 text-brand-blue-500",
-  [STATUS_PENGADUAN.DIPROSES]: "bg-brand-gold-50 text-brand-gold-600",
-  [STATUS_PENGADUAN.SELESAI]:  "bg-brand-green-50 text-brand-green-500",
+export const STATUS_ASPIRASI_COLORS = {
+  [STATUS_ASPIRASI.TERKIRIM]: "bg-brand-blue-500/10 text-brand-blue-500",
+  [STATUS_ASPIRASI.DIPROSES]: "bg-brand-gold-50 text-brand-gold-600",
+  [STATUS_ASPIRASI.DIBALAS]:  "bg-brand-green-50 text-brand-green-500",
 };

@@ -1,39 +1,17 @@
 {/* frontend/features/dashboard/pages/admin/AdminDashboardPage.jsx (lengkap) */}
 import AdminLayout from "@/shared/components/layout/AdminLayout";
 import { useBeritaList } from "@/features/berita/hooks/useBeritaList";
-import { usePengaduanList } from "@/features/pengaduan/hooks/usePengaduan";
+import { useAspirasiAdminList } from "@/features/aspirasi/hooks/useAspirasi";
 import { useDashboardSummary } from "../../hooks/useDashboardSummary";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import Badge from "@/shared/components/ui/Badge";
 import { formatShort } from "@/shared/utils/formatDate";
+import StatCard from "@/shared/components/ui/StatCard";
 import {
   STATUS_BERITA_LABELS, STATUS_BERITA_COLORS,
-  STATUS_PENGADUAN_LABELS, STATUS_PENGADUAN_COLORS,
+  STATUS_ASPIRASI_LABELS, STATUS_ASPIRASI_COLORS,
 } from "@/shared/constants/statusEnum";
 import { Link } from "react-router-dom";
-
-function StatCard({ label, value, icon, color = "green", linkTo }) {
-  const colorMap = {
-    green: "bg-brand-green-50 text-brand-green-500",
-    blue:  "bg-brand-blue-500/10 text-brand-blue-500",
-    gold:  "bg-brand-gold-50 text-brand-gold-600",
-    red:   "bg-brand-red-500/10 text-brand-red-500",
-  };
-
-  const card = (
-    <div className="bg-white rounded-card border border-neutral-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${colorMap[color]}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-2xl font-display font-bold text-neutral-900">{value ?? "—"}</p>
-        <p className="text-sm text-neutral-500">{label}</p>
-      </div>
-    </div>
-  );
-
-  return linkTo ? <Link to={linkTo}>{card}</Link> : card;
-}
 
 export default function AdminDashboardPage() {
   const { user } = useAuthContext();
@@ -44,12 +22,12 @@ export default function AdminDashboardPage() {
   const { data: summary } = useDashboardSummary();
 
   // Aktivitas terbaru tetap fetch daftar (perlu item-nya, bukan cuma total)
-  const { data: beritaTerbaru }    = useBeritaList({ page: 1, limit: 5 });
-  const { data: pengaduanTerbaru } = usePengaduanList({ page: 1, limit: 5 });
+  const { data: beritaTerbaru }   = useBeritaList({ page: 1, limit: 5 });
+  const { data: aspirasiTerbaru } = useAspirasiAdminList({ page: 1, limit: 5 });
 
   const totalBerita    = summary?.data?.total_berita_published;
   const totalProker    = summary?.data?.total_proker_aktif;
-  const totalPengaduan = summary?.data?.total_pengaduan_masuk;
+  const totalAspirasi  = summary?.data?.total_aspirasi_masuk;
 
   const jam = new Date().getHours();
   const sapaan =
@@ -79,7 +57,7 @@ export default function AdminDashboardPage() {
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
         />
         <StatCard
-          label="Pengaduan Masuk" value={totalPengaduan} color="gold" linkTo="/admin/pengaduan"
+          label="Aspirasi Masuk" value={totalAspirasi} color="gold" linkTo="/admin/aspirasi"
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
         />
         <StatCard
@@ -112,20 +90,20 @@ export default function AdminDashboardPage() {
 
         <div className="bg-white rounded-card border border-neutral-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
-            <h3 className="font-display font-bold text-neutral-900">Pengaduan Terbaru</h3>
-            <Link to="/admin/pengaduan" className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">Lihat Semua →</Link>
+            <h3 className="font-display font-bold text-neutral-900">Aspirasi Terbaru</h3>
+            <Link to="/admin/aspirasi" className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">Lihat Semua →</Link>
           </div>
           <ul className="divide-y divide-neutral-100">
-            {pengaduanTerbaru?.data?.results?.length === 0 && (
-              <li className="px-5 py-6 text-sm text-neutral-400 text-center">Belum ada pengaduan.</li>
+            {aspirasiTerbaru?.data?.results?.length === 0 && (
+              <li className="px-5 py-6 text-sm text-neutral-400 text-center">Belum ada aspirasi.</li>
             )}
-            {pengaduanTerbaru?.data?.results?.map((p) => (
-              <li key={p.id} className="flex items-center gap-3 px-5 py-3">
+            {aspirasiTerbaru?.data?.results?.map((a) => (
+              <li key={a.id} className="flex items-center gap-3 px-5 py-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-neutral-900 truncate">{p.asal_pimpinan}</p>
-                  <p className="text-xs text-neutral-400">{p.perihal} · {formatShort(p.created_at)}</p>
+                  <p className="text-sm font-medium text-neutral-900 truncate">{a.pimpinan_label}</p>
+                  <p className="text-xs text-neutral-400">{a.perihal} · {formatShort(a.created_at)}</p>
                 </div>
-                <Badge label={STATUS_PENGADUAN_LABELS[p.status] ?? p.status} colorClass={STATUS_PENGADUAN_COLORS[p.status]} />
+                <Badge label={STATUS_ASPIRASI_LABELS[a.status] ?? a.status} colorClass={STATUS_ASPIRASI_COLORS[a.status]} />
               </li>
             ))}
           </ul>
@@ -137,7 +115,7 @@ export default function AdminDashboardPage() {
         <div className="flex flex-wrap gap-3">
           <Link to="/admin/berita" className="btn-primary text-sm py-2">+ Tulis Berita</Link>
           <Link to="/admin/proker" className="btn-outline text-sm py-2">+ Tambah Proker</Link>
-          <Link to="/admin/pengaduan" className="btn-outline text-sm py-2">Lihat Pengaduan</Link>
+          <Link to="/admin/aspirasi" className="btn-outline text-sm py-2">Lihat Aspirasi</Link>
         </div>
       </div>
     </AdminLayout>

@@ -1,25 +1,56 @@
 import { Link } from "react-router-dom";
 import PublicLayout from "@/shared/components/layout/PublicLayout";
 import NewsCard from "@/features/berita/components/NewsCard";
-import TimelineItem from "@/features/proker/components/TimelineItem";
+import ProkerCalendar from "@/features/proker/components/ProkerCalendar";
 import { useBeritaList } from "@/features/berita/hooks/useBeritaList";
-import { useProkerList } from "@/features/proker/hooks/useProker";
 import { SkeletonCardGrid } from "@/shared/components/ui/Skeleton";
-import { STATUS_PROKER } from "@/shared/constants/statusEnum";
 
 // ── Section: Hero ────────────────────────────────────────────────────────────
 function HeroSection() {
   return (
     <section className="relative bg-brand-green-500 overflow-hidden">
-      {/* Dekorasi background */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-brand-gold-500 translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-brand-green-300 -translate-x-1/3 translate-y-1/3" />
-      </div>
+      {/* Motif jaringan: dua simpul (hub) emas melambangkan PW sebagai pusat
+          koordinasi, terhubung ke simpul-simpul putih (PC/PR) di sekitarnya —
+          merepresentasikan struktur wilayah, bukan sekadar dekorasi lepas. */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 800 400"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        <g stroke="currentColor" className="text-white" strokeOpacity="0.25" strokeWidth="1">
+          <line x1="640" y1="130" x2="560" y2="70" />
+          <line x1="640" y1="130" x2="720" y2="80" />
+          <line x1="640" y1="130" x2="760" y2="180" />
+          <line x1="640" y1="130" x2="700" y2="230" />
+          <line x1="640" y1="130" x2="600" y2="220" />
+          <line x1="640" y1="130" x2="680" y2="40" />
+          <line x1="140" y1="320" x2="60" y2="280" />
+          <line x1="140" y1="320" x2="90" y2="370" />
+          <line x1="140" y1="320" x2="200" y2="350" />
+          <line x1="140" y1="320" x2="170" y2="260" />
+          <line x1="640" y1="130" x2="140" y2="320" strokeOpacity="0.12" />
+        </g>
+        <g className="text-white" fill="currentColor" fillOpacity="0.35">
+          <circle cx="560" cy="70" r="3" />
+          <circle cx="720" cy="80" r="3" />
+          <circle cx="760" cy="180" r="3" />
+          <circle cx="700" cy="230" r="3" />
+          <circle cx="600" cy="220" r="3" />
+          <circle cx="680" cy="40" r="3" />
+          <circle cx="60" cy="280" r="3" />
+          <circle cx="90" cy="370" r="3" />
+          <circle cx="200" cy="350" r="3" />
+          <circle cx="170" cy="260" r="3" />
+        </g>
+        <g className="text-brand-gold-300" fill="currentColor">
+          <circle cx="640" cy="130" r="6" />
+          <circle cx="140" cy="320" r="5" />
+        </g>
+      </svg>
 
       <div className="container-site relative py-20 lg:py-28">
         <div className="max-w-2xl">
-          {/* Tagline */}
           <div className="inline-flex items-center gap-2 bg-brand-gold-500/20 text-brand-gold-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
             <div className="w-1.5 h-1.5 rounded-full bg-brand-gold-500" />
             Pimpinan Wilayah Ikatan Pelajar Muhammadiyah
@@ -39,8 +70,8 @@ function HeroSection() {
             <Link to="/profil" className="btn-secondary text-base px-6 py-3">
               Kenal Kami
             </Link>
-            <Link to="/pengaduan" className="btn-outline border-white text-white hover:bg-white/10 text-base px-6 py-3">
-              Sampaikan Aspirasi
+            <Link to="/berita" className="btn-outline border-white text-white hover:bg-white/10 text-base px-6 py-3">
+              Lihat Berita Terbaru
             </Link>
           </div>
         </div>
@@ -58,15 +89,17 @@ function StatsSection() {
     { label: "Tahun Berdiri",     value: "1961" },
   ];
   return (
-    <section className="bg-white border-b border-neutral-200">
-      <div className="container-site py-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map(({ label, value }) => (
-            <div key={label} className="text-center p-4">
-              <p className="font-display font-bold text-brand-green-500 text-3xl">{value}</p>
-              <p className="text-sm text-neutral-500 mt-1">{label}</p>
-            </div>
-          ))}
+    <section className="relative bg-neutral-50 pb-10 lg:pb-14">
+      <div className="container-site">
+        <div className="relative z-10 -mt-10 lg:-mt-14 bg-white rounded-2xl shadow-lg border border-neutral-100 px-4 py-6 lg:px-8 lg:py-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map(({ label, value }) => (
+              <div key={label} className="text-center p-4">
+                <p className="font-display font-bold text-brand-green-500 text-3xl">{value}</p>
+                <p className="text-sm text-neutral-500 mt-1">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -75,8 +108,9 @@ function StatsSection() {
 
 // ── Section: Berita terbaru ──────────────────────────────────────────────────
 function BeritaSection() {
-  const { data, isLoading } = useBeritaList({ page: 1, per_page: 3 });
-  const beritaList = data?.results ?? [];
+  const { data, isLoading } = useBeritaList({ page: 1, limit: 3 });
+  // envelope BE: { status, message, data: { results, meta }, errors }
+  const beritaList = data?.data?.results ?? [];
 
   return (
     <section className="section bg-neutral-50">
@@ -119,24 +153,18 @@ function BeritaSection() {
   );
 }
 
-// ── Section: Timeline proker berlangsung / akan datang ──────────────────────
+// ── Section: Kalender program kerja ──────────────────────────────────────────
 function TimelineSection() {
-  const { data, isLoading } = useProkerList({
-    status: STATUS_PROKER.BERLANGSUNG,
-    per_page: 3,
-  });
-  const prokerList = data?.data ?? [];
-
   return (
     <section className="section bg-white">
       <div className="container-site">
         <div className="flex items-end justify-between mb-8">
           <div>
             <p className="text-xs font-semibold text-brand-green-500 uppercase tracking-wide mb-1">
-              Sedang Berjalan
+              Agenda Organisasi
             </p>
             <h2 className="font-display font-bold text-neutral-900 text-2xl lg:text-3xl">
-              Program Kerja
+              Kalender Program Kerja
             </h2>
           </div>
           <Link to="/timeline" className="btn-outline text-sm hidden sm:inline-flex">
@@ -144,22 +172,8 @@ function TimelineSection() {
           </Link>
         </div>
 
-        <div className="max-w-2xl">
-          {isLoading && (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-20 bg-neutral-100 rounded-card animate-pulse" />
-              ))}
-            </div>
-          )}
-
-          {!isLoading && prokerList.length > 0 && prokerList.map((p, idx) => (
-            <TimelineItem key={p.id} proker={p} isLast={idx === prokerList.length - 1} />
-          ))}
-
-          {!isLoading && prokerList.length === 0 && (
-            <p className="text-neutral-400 text-sm">Belum ada program kerja yang sedang berlangsung.</p>
-          )}
+        <div className="max-w-2xl mx-auto">
+          <ProkerCalendar maxAgendaItems={5} />
         </div>
 
         <div className="sm:hidden mt-4">
@@ -170,20 +184,20 @@ function TimelineSection() {
   );
 }
 
-// ── Section: CTA Pengaduan ───────────────────────────────────────────────────
+// ── Section: CTA Bergabung (pengganti CTA Pengaduan yang sudah tidak dipakai) ─
 function CTASection() {
   return (
     <section className="bg-brand-green-900 section">
       <div className="container-site text-center max-w-xl mx-auto">
         <h2 className="font-display font-bold text-white text-2xl lg:text-3xl mb-4">
-          Ada Aspirasi atau Pengaduan?
+          Ingin Mengenal PW IPM Jawa Barat Lebih Dekat?
         </h2>
         <p className="text-brand-green-100 text-sm mb-8">
-          Sampaikan langsung kepada kami. Identitas Anda terjaga dan setiap pengaduan
-          akan ditindaklanjuti sesuai prosedur.
+          Pelajari struktur kepengurusan, bidang kerja, dan program-program kami
+          di seluruh Jawa Barat.
         </p>
-        <Link to="/pengaduan" className="btn-secondary text-base px-8 py-3">
-          Kirim Pengaduan Sekarang
+        <Link to="/profil" className="btn-secondary text-base px-8 py-3">
+          Lihat Profil Organisasi
         </Link>
       </div>
     </section>

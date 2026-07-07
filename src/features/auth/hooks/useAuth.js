@@ -5,8 +5,13 @@ import { firebaseAuthService } from "../services/firebaseAuthService";
 /**
  * useAuth — hook untuk aksi login/logout dari komponen form.
  * State auth global (user, loading) ada di AuthProvider/useAuthContext — bukan di sini.
+ *
+ * @param {{ redirectTo?: string }} [options]
+ *   `redirectTo` — tujuan navigate() setelah login sukses.
+ *   Default "/admin/dashboard" (perilaku lama, dipakai AdminLoginPage).
+ *   PimpinanLoginPage memakai "/pimpinan/dashboard".
  */
-export function useAuth() {
+export function useAuth({ redirectTo = "/admin/dashboard" } = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error,     setError]     = useState(null);
   const navigate = useNavigate();
@@ -16,7 +21,7 @@ export function useAuth() {
     setError(null);
     try {
       await firebaseAuthService.login(email, password);
-      navigate("/admin/dashboard", { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       // Terjemahkan kode error Firebase ke pesan Indonesia
       const msg = mapFirebaseError(err.code);

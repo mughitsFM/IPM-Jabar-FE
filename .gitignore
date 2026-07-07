@@ -11,7 +11,7 @@ dist-ssr/
 .env.*.local
 .env.production
 .env.development
- *.zip
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
@@ -29,3 +29,7 @@ Thumbs.db
 # Cache
 .cache/
 *.log
+
+#junk file
+*.zip
+_export-for-review/

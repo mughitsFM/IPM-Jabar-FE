@@ -46,7 +46,7 @@ export default function Footer() {
                 { to: "/berita",    label: "Berita & Informasi" },
                 { to: "/profil",    label: "Profil Kepengurusan" },
                 { to: "/timeline",  label: "Program Kerja" },
-                { to: "/pengaduan", label: "Pengaduan / Surat" },
+                // { to: "/pengaduan", label: "Pengaduan / Surat" },
               ].map(({ to, label }) => (
                 <li key={to}>
                   <Link to={to} className="hover:text-white transition-colors">

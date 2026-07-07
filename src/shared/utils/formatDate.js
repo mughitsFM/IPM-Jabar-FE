@@ -38,3 +38,19 @@ export function formatRelative(dateValue) {
 export function formatShort(dateValue) {
   return formatDate(dateValue, "d MMM yyyy");
 }
+
+/**
+ * Format bulan + tahun untuk header kalender.
+ * Contoh: "Juli 2026"
+ */
+export function formatMonthYear(dateValue) {
+  return formatDate(dateValue, "MMMM yyyy");
+}
+
+/**
+ * Format tanggal pendek untuk badge agenda kalender (tanpa tahun).
+ * Contoh: "12 Jul"
+ */
+export function formatDayMonth(dateValue) {
+  return formatDate(dateValue, "d MMM");
+}

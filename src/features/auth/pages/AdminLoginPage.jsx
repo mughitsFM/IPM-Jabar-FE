@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
 
         {/* Form */}
         <div className="bg-white rounded-card shadow-sm border border-neutral-200 p-6">
-          <LoginForm />
+          <LoginForm redirectTo="/admin/dashboard" />
         </div>
 
         {/* Kembali ke publik */}

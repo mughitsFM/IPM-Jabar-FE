@@ -6,8 +6,9 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 const ALLOWED_EXTENSIONS = ["pdf", "docx", "jpg", "jpeg", "png"];
-
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_SIZE_SURAT_MB = 10;
+const MAX_SIZE_SURAT_BYTES = MAX_SIZE_SURAT_MB * 1024 * 1024;
+const MAX_SIZE_BYTES = 1024 * 1024;
 
 /**
  * Validasi file lampiran pengaduan.
@@ -52,4 +53,26 @@ export function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Validasi lampiran surat resmi — PDF-only, maksimal 10 MB.
+ * @param {File} file
+ * @returns {{ valid: boolean, error: string|null }}
+ */
+export function validateLampiranPDF(file) {
+  if (!file) {
+    return { valid: false, error: "Silakan pilih file terlebih dahulu." };
+  }
+  if (file.type !== "application/pdf") {
+    return { valid: false, error: "Lampiran surat harus berupa file PDF." };
+  }
+  if (file.size > MAX_SIZE_SURAT_BYTES) {
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    return {
+      valid: false,
+      error: `Ukuran file melebihi batas maksimal ${MAX_SIZE_SURAT_MB} MB (ukuran saat ini: ${sizeMb} MB).`,
+    };
+  }
+  return { valid: true, error: null };
 }

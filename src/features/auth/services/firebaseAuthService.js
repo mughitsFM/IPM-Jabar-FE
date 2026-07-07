@@ -17,7 +17,7 @@ export const firebaseAuthService = {
   login: (email, password) =>
     signInWithEmailAndPassword(auth, email, password),
 
-  /** Logout admin */
+  /** Logout admin/pimpinan */
   logout: () => signOut(auth),
 
   /**
@@ -26,4 +26,12 @@ export const firebaseAuthService = {
    * Terpanggil saat: init, login, logout, dan token di-refresh (~1 jam).
    */
   subscribe: (callback) => onIdTokenChanged(auth, callback),
+
+  /**
+   * Ambil Firebase user saat ini secara sinkron (bisa null bila belum login).
+   * BARU — dipakai AuthProvider.refreshSession() untuk memuat ulang sesi
+   * secara manual (mis. setelah update foto/nama profil sendiri) tanpa perlu
+   * menunggu event onIdTokenChanged. Lihat 02-login-dan-layout-pimpinan.md §8.
+   */
+  getCurrentUser: () => auth.currentUser,
 };

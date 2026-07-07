@@ -1,12 +1,22 @@
 import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
+import NotificationBell from "@/features/notifikasi/components/NotificationBell";
+import { useAuthContext } from "@/app/providers/AuthProvider";
+import { ROLES } from "@/shared/constants/roles";
 
 /**
  * Layout untuk halaman admin — sidebar biru di kiri, konten di kanan.
  * Di mobile: sidebar tersembunyi, bisa dibuka via tombol hamburger.
+ *
+ * Notifikasi (NotificationBell) sengaja disembunyikan untuk super_admin —
+ * super_admin tidak mengelola konten operasional (berita/surat/aspirasi/dll)
+ * jadi tidak ada notif yang relevan untuknya. Lihat perbaikan role guard
+ * di router.jsx/ProtectedRoute.jsx.
  */
 export default function AdminLayout({ children, title }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuthContext();
+  const isSuperAdmin = user?.role === ROLES.SUPER_ADMIN;
 
   return (
     <div className="flex min-h-screen bg-neutral-50">
@@ -46,18 +56,22 @@ export default function AdminLayout({ children, title }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          {title && (
-            <h1 className="font-display font-bold text-neutral-900 text-base truncate">{title}</h1>
-          )}
+          <div className="flex-1 min-w-0">
+            {title && (
+              <h1 className="font-display font-bold text-neutral-900 text-base truncate">{title}</h1>
+            )}
+          </div>
+          {!isSuperAdmin && <NotificationBell />}
         </header>
 
         {/* Konten halaman */}
         <main className="flex-1 p-4 lg:p-8">
-          {title && (
-            <h1 className="hidden lg:block font-display font-bold text-neutral-900 text-2xl mb-6">
-              {title}
-            </h1>
-          )}
+          <div className="hidden lg:flex items-center justify-between mb-6">
+            {title ? (
+              <h1 className="font-display font-bold text-neutral-900 text-2xl">{title}</h1>
+            ) : <div />}
+            {!isSuperAdmin && <NotificationBell />}
+          </div>
           {children}
         </main>
       </div>

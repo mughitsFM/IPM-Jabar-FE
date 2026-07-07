@@ -8,3 +8,10 @@ export function useDashboardSummary() {
     queryFn:  () => dashboardService.getSummary(),
   });
 }
+
+export function useDashboardSummarySuperadmin() {
+  return useQuery({
+    queryKey: ["dashboard", "summary-superadmin"],
+    queryFn:  () => dashboardService.getSummarySuperadmin(),
+  });
+}

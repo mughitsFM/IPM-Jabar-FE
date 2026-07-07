@@ -6,7 +6,7 @@ const NAV_LINKS = [
   { to: "/berita",    label: "Berita"    },
   { to: "/profil",    label: "Profil"    },
   { to: "/timeline",  label: "Timeline"  },
-  { to: "/pengaduan", label: "Pengaduan" },
+  // { to: "/pengaduan", label: "Pengaduan" },
 ];
 
 export default function Navbar() {
@@ -32,26 +32,38 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <ul className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(({ to, label }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  end={to === "/"}
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-150 min-h-[44px] flex items-center
-                    ${isActive
-                      ? "bg-white/20 text-white"
-                      : "text-brand-green-50 hover:bg-white/10 hover:text-white"
-                    }`
-                  }
-                >
-                  {label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+          {/* Desktop Nav + CTA Login Pimpinan */}
+          <div className="hidden md:flex items-center gap-3">
+            <ul className="flex items-center gap-1">
+              {NAV_LINKS.map(({ to, label }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    end={to === "/"}
+                    className={({ isActive }) =>
+                      `px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-150 min-h-[44px] flex items-center
+                      ${isActive
+                        ? "bg-white/20 text-white"
+                        : "text-brand-green-50 hover:bg-white/10 hover:text-white"
+                      }`
+                    }
+                  >
+                    {label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+
+            {/* Tombol CTA terpisah — sengaja TIDAK dimasukkan ke NAV_LINKS supaya
+                tidak terlihat sebagai halaman publik biasa. Gunakan <Link>, bukan
+                <a href>, supaya SPA routing tetap berlaku. */}
+            <Link
+              to="/pimpinan/login"
+              className="border border-white/40 text-white hover:bg-white/10 rounded-lg px-4 py-2 text-sm font-semibold min-h-[44px] flex items-center transition-colors"
+            >
+              Login Pimpinan
+            </Link>
+          </div>
 
           {/* Mobile Hamburger */}
           <button
@@ -99,6 +111,17 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
+
+          {/* Divider + tombol Login Pimpinan, ditonjolkan beda dari NavLink biasa */}
+          <div className="container-site pt-3 mt-2 border-t border-white/10">
+            <Link
+              to="/pimpinan/login"
+              onClick={() => setMenuOpen(false)}
+              className="block text-center bg-brand-gold-500 text-brand-green-900 rounded-lg px-4 py-3 text-sm font-bold min-h-[44px] flex items-center justify-center"
+            >
+              Login Pimpinan
+            </Link>
+          </div>
         </div>
       )}
     </header>

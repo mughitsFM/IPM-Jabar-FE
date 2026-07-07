@@ -2,8 +2,16 @@ import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Button from "@/shared/components/ui/Button";
 
-export default function LoginForm() {
-  const { login, isLoading, error } = useAuth();
+/**
+ * LoginForm — dipakai ulang apa adanya oleh AdminLoginPage & PimpinanLoginPage.
+ *
+ * @param {string} [redirectTo]        - diteruskan ke useAuth(), lihat hook untuk default.
+ * @param {string} [emailPlaceholder]  - placeholder input email; PimpinanLoginPage memakai
+ *                                        teks keterangan ("gunakan email yang didaftarkan admin wilayah")
+ *                                        alih-alih contoh alamat email.
+ */
+export default function LoginForm({ redirectTo, emailPlaceholder = "admin@ipmjabar.or.id" }) {
+  const { login, isLoading, error } = useAuth({ redirectTo });
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
 
@@ -38,7 +46,7 @@ export default function LoginForm() {
           required
           value={form.email}
           onChange={handleChange}
-          placeholder="admin@ipmjabar.or.id"
+          placeholder={emailPlaceholder}
           className="input-field"
         />
       </div>
