@@ -4,7 +4,7 @@ import { useAuthContext } from "@/app/providers/AuthProvider";
 import { firebaseAuthService } from "@/features/auth/services/firebaseAuthService";
 import { ROLES, ROLE_LABELS } from "@/shared/constants/roles";
 
-// ── Ikon (dipisah supaya array NAV_GROUPS_* di bawah tetap ringkas) ─────────
+// ── Ikon (tidak berubah) ─────────────────────────────────────────────────
 const IconDashboard = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -62,58 +62,45 @@ const IconChevronDown = (props) => (
   </svg>
 );
 
-// ── Menu Admin (role "editor", ditampilkan sebagai "Admin") — file 12 §3 ───
-// Dikelompokkan per kategori. `label: null` = grup tanpa judul (item lepas
-// seperti Dashboard & Pengaturan Akun yang bukan bagian dari ketiga kategori,
-// dan TIDAK dijadikan dropdown). Grup dengan `label` diisi akan otomatis
-// dirender sebagai dropdown yang bisa dibuka/tutup.
+// ── Menu Admin — Pengaturan Akun sudah TIDAK di sini lagi, pindah ke footer ──
 const NAV_GROUPS_ADMIN = [
   {
     label: null,
     items: [
       { to: "/admin/dashboard", label: "Dashboard", icon: <IconDashboard /> },
+      { to: "/admin/surat", label: "Surat Menyurat", icon: <IconSurat /> },
+      { to: "/admin/aspirasi", label: "Aspirasi", icon: <IconAspirasi /> },
     ],
   },
   {
     label: "Manajemen Konten",
     items: [
-      { to: "/admin/profil",             label: "Profil Kepengurusan", icon: <IconProfil /> },
-      { to: "/admin/berita",           label: "Berita",                  icon: <IconBerita /> },
-      { to: "/admin/proker",           label: "Program Kerja",           icon: <IconProker /> },
+      { to: "/admin/profil", label: "Profil Kepengurusan", icon: <IconProfil /> },
+      { to: "/admin/berita", label: "Berita", icon: <IconBerita /> },
+      { to: "/admin/proker", label: "Program Kerja", icon: <IconProker /> },
     ],
   },
   {
-    label: "Manajemen Publik",
-    items: [
-
-    ],
+    label: "Manajemen Visual Publik",
+    items: [],
   },
   {
     label: "Manajemen Pimpinan",
     items: [
-      { to: "/admin/manajemen-pimpinan", label: "Manajemen Pimpinan",  icon: <IconPimpinan /> },
+      { to: "/admin/manajemen-pimpinan", label: "Manajemen Pimpinan", icon: <IconPimpinan /> },
       { to: "/admin/artikel-pimpinan", label: "Review Artikel Pimpinan", icon: <IconReviewArtikel /> },
-    ],
-  },
-  {
-    label: null,
-    items: [
-      { to: "/admin/surat",    label: "Surat Menyurat", icon: <IconSurat /> },
-      { to: "/admin/aspirasi", label: "Aspirasi",       icon: <IconAspirasi /> },
-      { to: "/admin/pengaturan", label: "Pengaturan Akun", icon: <IconGear /> },
     ],
   },
 ];
 
-// ── Menu Superadmin — hanya 4 panel, dibiarkan flat (file 12 §4) ───────────
+// ── Menu Superadmin — Pengaturan Akun juga pindah ke footer ────────────────
 const NAV_GROUPS_SUPERADMIN = [
   {
     label: null,
     items: [
-      { to: "/admin/dashboard-superadmin", label: "Dashboard",               icon: <IconDashboard /> },
-      { to: "/admin/pengguna",             label: "Manajemen Akun Admin",    icon: <IconAdminAccount /> },
-      { to: "/admin/manajemen-pimpinan",   label: "Manajemen Akun Pimpinan", icon: <IconPimpinan /> },
-      { to: "/admin/pengaturan",           label: "Pengaturan Akun",         icon: <IconGear /> },
+      { to: "/admin/dashboard-superadmin", label: "Dashboard", icon: <IconDashboard /> },
+      { to: "/admin/pengguna", label: "Manajemen Akun Admin", icon: <IconAdminAccount /> },
+      { to: "/admin/manajemen-pimpinan", label: "Manajemen Akun Pimpinan", icon: <IconPimpinan /> },
     ],
   },
 ];
@@ -126,8 +113,6 @@ export default function AdminSidebar({ onClose }) {
   const isSuperAdmin = user?.role === ROLES.SUPER_ADMIN;
   const groups = isSuperAdmin ? NAV_GROUPS_SUPERADMIN : NAV_GROUPS_ADMIN;
 
-  // Grup berlabel = dropdown. Default: terbuka otomatis jika salah satu
-  // link di dalamnya sedang aktif (sesuai path saat ini), selebihnya tertutup.
   const [openGroups, setOpenGroups] = useState(() => {
     const state = {};
     groups.forEach((group) => {
@@ -149,9 +134,9 @@ export default function AdminSidebar({ onClose }) {
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-neutral-200 flex flex-col">
-      {/* Header sidebar */}
-      <div className="px-5 py-5 border-b border-neutral-200 bg-brand-blue-500">
+    <aside className="w-64 h-screen sticky top-0 bg-white border-r border-neutral-200 flex flex-col overflow-hidden">
+      {/* Header sidebar — shrink-0 supaya tidak ikut "diperas" flexbox */}
+      <div className="px-5 py-5 border-b border-neutral-200 bg-brand-blue-500 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-brand-gold-500 flex items-center justify-center text-neutral-900 font-bold text-xs shrink-0">
             IPM
@@ -165,10 +150,9 @@ export default function AdminSidebar({ onClose }) {
         </div>
       </div>
 
-      {/* Nav items, dikelompokkan per kategori. Grup berlabel = dropdown */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto" aria-label="Navigasi admin">
+      {/* Nav items — flex-1 min-h-0 overflow-y-auto = scroll sendiri, terpisah dari footer */}
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4" aria-label="Navigasi admin">
         {groups.map((group, groupIdx) => {
-          // Grup kosong (mis. "Manajemen Publik" yang belum ada isinya) diskip
           if (group.items.length === 0) return null;
 
           const isDropdown = Boolean(group.label);
@@ -218,17 +202,35 @@ export default function AdminSidebar({ onClose }) {
         })}
       </nav>
 
-      {/* User info + logout */}
-      <div className="px-4 py-4 border-t border-neutral-200">
+      {/* User info (dengan tombol Pengaturan Akun) + logout — shrink-0, selalu nempel di bawah */}
+      <div className="px-4 py-4 border-t border-neutral-200 shrink-0">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-full bg-brand-blue-500/10 flex items-center justify-center text-brand-blue-500 font-bold text-xs shrink-0">
             {user?.nama?.charAt(0)?.toUpperCase() ?? "A"}
           </div>
-          <div className="overflow-hidden">
+
+          <div className="overflow-hidden flex-1">
             <p className="text-sm font-semibold text-neutral-900 truncate">{user?.nama ?? user?.email}</p>
             <p className="text-xs text-neutral-400">{ROLE_LABELS[user?.role] ?? user?.role}</p>
           </div>
+
+          <NavLink
+            to="/admin/pengaturan"
+            onClick={onClose}
+            aria-label="Pengaturan Akun"
+            title="Pengaturan Akun"
+            className={({ isActive }) =>
+              `shrink-0 w-11 h-11 flex items-center justify-center rounded-lg transition-colors duration-150
+              ${isActive
+                ? "bg-brand-blue-500/10 text-brand-blue-500"
+                : "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900"
+              }`
+            }
+          >
+            <IconGear />
+          </NavLink>
         </div>
+
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-state-error hover:bg-red-50 transition-colors min-h-[44px]"

@@ -3,6 +3,14 @@ import { useAuthContext } from "@/app/providers/AuthProvider";
 import { firebaseAuthService } from "@/features/auth/services/firebaseAuthService";
 import { ROLE_LABELS } from "@/shared/constants/roles";
 
+const IconGear = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+// ── Pengaturan Akun sudah TIDAK di sini lagi, pindah ke footer ─────────────
 const NAV_ITEMS = [
   {
     to:    "/pimpinan/dashboard",
@@ -49,16 +57,6 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-  {
-    to:    "/pimpinan/pengaturan",
-    label: "Pengaturan Akun",
-    icon:  (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
 ];
 
 /**
@@ -91,11 +89,9 @@ export default function PimpinanSidebar({ onClose }) {
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-neutral-200 flex flex-col">
-      {/* Header sidebar — bg hijau (beda dari admin yang biru) supaya
-          Pimpinan & Admin punya identitas warna berbeda secara sekilas.
-          Judul memakai label_lengkap pimpinan, bukan "Panel Admin". */}
-      <div className="px-5 py-5 border-b border-neutral-200 bg-brand-green-500">
+    <aside className="w-64 h-screen sticky top-0 bg-white border-r border-neutral-200 flex flex-col overflow-hidden">
+      {/* Header sidebar — shrink-0 supaya tidak ikut "diperas" flexbox */}
+      <div className="px-5 py-5 border-b border-neutral-200 bg-brand-green-500 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-xs shrink-0">
             IPM
@@ -110,8 +106,8 @@ export default function PimpinanSidebar({ onClose }) {
         </div>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Navigasi pimpinan">
+      {/* Nav items — flex-1 min-h-0 overflow-y-auto = scroll sendiri, terpisah dari footer */}
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1" aria-label="Navigasi pimpinan">
         {NAV_ITEMS.map(({ to, label, icon }) => (
           <NavLink
             key={to}
@@ -131,8 +127,8 @@ export default function PimpinanSidebar({ onClose }) {
         ))}
       </nav>
 
-      {/* User info + logout */}
-      <div className="px-4 py-4 border-t border-neutral-200">
+      {/* User info (dengan tombol Pengaturan Akun) + logout — shrink-0, selalu nempel di bawah */}
+      <div className="px-4 py-4 border-t border-neutral-200 shrink-0">
         <div className="flex items-center gap-2 mb-3">
           {user?.foto_profil_url ? (
             <img
@@ -145,11 +141,29 @@ export default function PimpinanSidebar({ onClose }) {
               {user?.nama?.charAt(0)?.toUpperCase() ?? "P"}
             </div>
           )}
-          <div className="overflow-hidden">
+
+          <div className="overflow-hidden flex-1">
             <p className="text-sm font-semibold text-neutral-900 truncate">{user?.nama ?? user?.email}</p>
             <p className="text-xs text-neutral-400">{ROLE_LABELS[user?.role] ?? user?.role}</p>
           </div>
+
+          <NavLink
+            to="/pimpinan/pengaturan"
+            onClick={onClose}
+            aria-label="Pengaturan Akun"
+            title="Pengaturan Akun"
+            className={({ isActive }) =>
+              `shrink-0 w-11 h-11 flex items-center justify-center rounded-lg transition-colors duration-150
+              ${isActive
+                ? "bg-brand-green-500/10 text-brand-green-500"
+                : "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900"
+              }`
+            }
+          >
+            <IconGear />
+          </NavLink>
         </div>
+
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-state-error hover:bg-red-50 transition-colors min-h-[44px]"
