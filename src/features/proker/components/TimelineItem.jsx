@@ -32,7 +32,7 @@ export default function TimelineItem({ proker, isLast = false }) {
         {!isLast && <div className="w-0.5 flex-1 bg-neutral-200 mt-2" />}
       </div>
 
-      <div className="bg-white rounded-card border border-neutral-200 p-5 flex-1 hover:shadow-md transition-shadow duration-200 mb-1">
+      <div className="bg-white rounded-card border border-neutral-200 p-5 flex-1 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 mb-1">
         <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
           <h3 className="font-display font-bold text-neutral-900 text-base leading-snug">
             {nama_kegiatan}

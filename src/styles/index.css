@@ -5,13 +5,14 @@
 /* ===== Base ===== */
 @layer base {
   html {
-    font-family: "Plus Jakarta Sans", sans-serif;
+    /* Nilai runtime di-set ThemeInjector, fallback ke font lama */
+    font-family: var(--font-body, "Plus Jakarta Sans"), sans-serif;
     font-size: 16px; /* basis rem — tidak dikunci agar zoom browser bekerja */
     scroll-behavior: smooth;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Lexend", sans-serif;
+    font-family: var(--font-display, "Lexend"), sans-serif;
   }
 
   body {
@@ -92,8 +93,21 @@
 
   /* Section spacing */
   .section {
-    @apply py-12 lg:py-20;
+    @apply py-10 lg:py-16;  /* dari py-12 lg:py-20 */
   }
+}
+
+/* ===== Micro-interactions ===== */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-down {
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-down { animation: none; }
 }
 
 /* ===== Rich Text Content (konten berita dari TipTap) ===== */
@@ -116,4 +130,53 @@
 }
 .prose-ipm img {
   @apply rounded-lg my-4 w-full object-cover;
+}
+
+.berita-figure { margin: 1.5rem 0; }
+.berita-figure img { width: 100%; border-radius: 0.5rem; display: block; }
+.berita-figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #737373;
+  text-align: center;
+  outline: none;
+}
+.berita-figcaption:empty::before {
+  content: attr(data-placeholder);
+  color: #a3a3a3;
+}
+
+/* Pull-quote yang lebih tegas dari blockquote polos */
+.prose-ipm blockquote {
+  border-left: 4px solid theme('colors.brand.green.500', #16a34a);
+  padding-left: 1rem;
+  font-style: italic;
+  font-size: 1.05em;
+  color: #404040;
+}
+
+/* Video YouTube — tampilan editor (thumbnail statis + tombol hapus) */
+.berita-yt-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #000;
+}
+.berita-yt-thumb { width: 100%; display: block; opacity: 0.85; }
+.berita-yt-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 2.5rem; pointer-events: none; text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.berita-yt-remove {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem;
+  padding: 0.25rem 0.6rem; border-radius: 9999px; border: none; cursor: pointer;
+}
+.berita-yt-remove:hover { background: rgba(0,0,0,0.8); }
+
+/* Video YouTube — tampilan publik (iframe sungguhan, rasio 16:9 responsif) */
+.berita-yt-wrapper--public { padding-top: 56.25%; }
+.berita-yt-wrapper--public iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
 }

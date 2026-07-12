@@ -225,13 +225,14 @@ export default function ProkerCalendar({ maxAgendaItems = 5 }) {
   const visibleAgendaItems = agendaItems.slice(0, maxAgendaItems);
 
   return (
-    <div className="bg-white rounded-card border border-neutral-200 overflow-hidden">
+    // ⬇ ditambah shadow-sm — konsisten dengan Card.jsx (bg-white rounded-card shadow-sm border)
+    <div className="bg-white rounded-card border border-neutral-200 shadow-sm overflow-hidden">
       {/* Header navigasi bulan */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
         <button
           onClick={goPrevMonth}
           aria-label="Bulan sebelumnya"
-          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 hover:scale-105 active:scale-95 transition-all duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -245,7 +246,7 @@ export default function ProkerCalendar({ maxAgendaItems = 5 }) {
         <button
           onClick={goNextMonth}
           aria-label="Bulan berikutnya"
-          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 hover:scale-105 active:scale-95 transition-all duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -304,9 +305,9 @@ export default function ProkerCalendar({ maxAgendaItems = 5 }) {
                               : ""
                           }`}
                           aria-pressed={!!selected}
-                          className={`relative min-h-[40px] rounded-lg flex flex-col items-center justify-center gap-0.5 text-sm transition-colors duration-150
+                          className={`relative min-h-[40px] rounded-lg flex flex-col items-center justify-center gap-0.5 text-sm transition-all duration-150
                             ${!inMonth ? "text-neutral-300" : "text-neutral-700"}
-                            ${selected ? "bg-brand-green-500 text-white font-semibold" : ""}
+                            ${selected ? "bg-brand-green-500 text-white font-semibold shadow-sm shadow-brand-green-500/30" : ""}
                             ${!selected && today ? "ring-2 ring-brand-green-500 font-bold text-brand-green-600" : ""}
                             ${!selected ? "hover:bg-neutral-100" : ""}
                           `}

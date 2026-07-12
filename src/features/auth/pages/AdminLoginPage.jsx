@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
+import AuthShell from "../components/AuthShell";
+import { useDesainGlobal } from "@/shared/hooks/useDesainPublic";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 
 export default function AdminLoginPage() {
   const { user, loading } = useAuthContext();
   const navigate = useNavigate();
+  const { global } = useDesainGlobal();
+  const logoUrl = global?.logo_url;
 
   // Jika sudah login, langsung redirect ke dashboard
   useEffect(() => {
@@ -13,30 +17,27 @@ export default function AdminLoginPage() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center px-4 py-12">
-      {/* Card login */}
-      <div className="w-full max-w-sm">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-14 h-14 rounded-full bg-brand-green-500 flex items-center justify-center text-white font-display font-bold text-xl mb-4">
-            IPM
-          </div>
-          <h1 className="font-display font-bold text-neutral-900 text-2xl">Panel Admin</h1>
-          <p className="text-sm text-neutral-600 mt-1">PW IPM Jawa Barat</p>
-        </div>
-
-        {/* Form */}
-        <div className="bg-white rounded-card shadow-sm border border-neutral-200 p-6">
-          <LoginForm redirectTo="/admin/dashboard" />
-        </div>
-
-        {/* Kembali ke publik */}
-        <p className="text-center text-sm text-neutral-500 mt-6">
-          <a href="/" className="text-brand-green-500 hover:text-brand-green-600 font-semibold">
-            ← Kembali ke halaman utama
-          </a>
-        </p>
-      </div>
-    </div>
+    <AuthShell
+      eyebrow="Panel Admin"
+      orgName="PW IPM Jawa Barat"
+      logoUrl={logoUrl}
+      panelTitle="Kelola satu wilayah, satu kendali penuh."
+      panelDescription="Berita, surat-menyurat, program kerja, dan data pimpinan wilayah — semuanya terpusat di satu panel admin."
+      formTitle="Masuk ke Panel Admin"
+      formSubtitle="Gunakan akun admin wilayah Anda untuk melanjutkan."
+      footer={
+        <a
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-green-600 font-medium transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Kembali ke halaman utama
+        </a>
+      }
+    >
+      <LoginForm redirectTo="/admin/dashboard" />
+    </AuthShell>
   );
 }

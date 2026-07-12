@@ -1,5 +1,6 @@
 {/* frontend/features/artikel-pimpinan/pages/admin/AdminArtikelPimpinanPage.jsx (lengkap) */}
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { hydrateYoutubeEmbeds } from "../../utils/hydrateYoutubeEmbeds";
 import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Button from "@/shared/components/ui/Button";
 import EmptyState from "@/shared/components/ui/EmptyState";
@@ -7,6 +8,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import { SkeletonTableRows } from "@/shared/components/ui/Skeleton";
 import { formatShort } from "@/shared/utils/formatDate";
 import ArtikelStatusBadge from "../../components/ArtikelStatusBadge";
+
 import {
   useArtikelPimpinanAdminList,
   useSetujuiArtikelPimpinan,
@@ -23,8 +25,13 @@ const TABS = [
 ];
 
 function ReviewModal({ artikel, onClose }) {
-  const [mode, setMode] = useState(null); // "revisi" | "tolak" | null
+  const [mode, setMode] = useState(null);
   const [catatan, setCatatan] = useState("");
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    hydrateYoutubeEmbeds(contentRef.current);
+  }, [artikel.konten]);
 
   const setujui = useSetujuiArtikelPimpinan();
   const revisi = useRevisiArtikelPimpinan();
@@ -60,7 +67,17 @@ function ReviewModal({ artikel, onClose }) {
           {artikel.thumbnail_url && (
             <img src={artikel.thumbnail_url} alt="" className="w-full aspect-video object-cover rounded-lg mb-4 border border-neutral-200" />
           )}
-          <div className="prose-ipm text-sm max-w-none" dangerouslySetInnerHTML={{ __html: artikel.konten }} />
+          {artikel.ringkasan && (
+            <p className="text-sm text-neutral-600 italic mb-4 pb-4 border-b border-neutral-100">{artikel.ringkasan}</p>
+          )}
+          <div ref={contentRef} className="prose-ipm text-sm max-w-none" dangerouslySetInnerHTML={{ __html: artikel.konten }} />
+          {artikel.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-neutral-100">
+              {artikel.tags.map((tag) => (
+                <span key={tag} className="text-xs font-medium text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full">#{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="px-5 py-4 border-t border-neutral-100 bg-neutral-50 sticky bottom-0">

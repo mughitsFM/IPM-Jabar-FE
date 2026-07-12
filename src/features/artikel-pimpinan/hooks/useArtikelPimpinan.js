@@ -32,13 +32,17 @@ export function useCreateArtikelPimpinan() {
   });
 }
 
-export function useUpdateArtikelPimpinan(id) {
+// PERUBAHAN: id sekarang dikirim per-panggilan lewat mutate({ id, payload })
+// (sebelumnya di-bind saat hook dibuat: useUpdateArtikelPimpinan(id)) — supaya
+// hook yang sama bisa dipakai untuk autosave pada artikel baru yang baru
+// dapat id di tengah sesi menulis. Pola identik dengan useUpdateBerita.
+export function useUpdateArtikelPimpinan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload) => artikelPimpinanService.update(id, payload),
-    onSuccess: () => {
+    mutationFn: ({ id, payload }) => artikelPimpinanService.update(id, payload),
+    onSuccess: (_data, variables) => {
       invalidateAll(qc);
-      qc.invalidateQueries({ queryKey: [...LIST_KEY, "detail", id] });
+      qc.invalidateQueries({ queryKey: [...LIST_KEY, "detail", variables.id] });
     },
   });
 }

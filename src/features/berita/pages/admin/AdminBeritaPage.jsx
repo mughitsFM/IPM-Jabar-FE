@@ -4,10 +4,11 @@ import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Button from "@/shared/components/ui/Button";
 import Badge from "@/shared/components/ui/Badge";
 import EmptyState from "@/shared/components/ui/EmptyState";
+import Modal from "@/shared/components/ui/Modal";
 import Pagination from "@/shared/components/ui/Pagination";
 import { SkeletonTableRows } from "@/shared/components/ui/Skeleton";
 import NewsForm from "../../components/NewsForm";
-import { useBeritaList } from "../../hooks/useBeritaList";
+import { useBeritaAdminList } from "../../hooks/useBeritaList";
 import {
   useCreateBerita,
   useUpdateBerita,
@@ -26,22 +27,15 @@ export default function AdminBeritaPage() {
   const [page,     setPage]     = useState(1);
   const [deleteId, setDeleteId] = useState(null);
 
-  const { data, isLoading } = useBeritaList({ page, limit: 10 });
+  // BUG FIX: sebelumnya useBeritaList (endpoint publik) — lihat catatan
+  // lengkap di hooks/useBeritaList.js.
+  const { data, isLoading } = useBeritaAdminList({ page, limit: 10 });
 
   const createMutation = useCreateBerita();
-  const updateMutation = useUpdateBerita(editData?.id);
+  const updateMutation = useUpdateBerita();
   const deleteMutation = useDeleteBerita();
 
-  const handleCreate = async (payload) => {
-    await createMutation.mutateAsync(payload);
-    setView("list");
-  };
-
-  const handleUpdate = async (payload) => {
-    await updateMutation.mutateAsync(payload);
-    setView("list");
-    setEditData(null);
-  };
+  const closeForm = () => { setView("list"); setEditData(null); };
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -54,7 +48,7 @@ export default function AdminBeritaPage() {
       <AdminLayout title={view === "create" ? "Tambah Berita" : "Edit Berita"}>
         <div className="max-w-3xl">
           <button
-            onClick={() => { setView("list"); setEditData(null); }}
+            onClick={closeForm}
             className="flex items-center gap-1 text-sm text-brand-blue-500 hover:text-brand-blue-600 font-semibold mb-6"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -65,8 +59,9 @@ export default function AdminBeritaPage() {
           <div className="bg-white rounded-card border border-neutral-200 p-6">
             <NewsForm
               initialData={view === "edit" ? editData : null}
-              onSubmit={view === "create" ? handleCreate : handleUpdate}
-              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              createMutation={createMutation}
+              updateMutation={updateMutation}
+              onDone={closeForm}
             />
           </div>
         </div>
@@ -142,31 +137,15 @@ export default function AdminBeritaPage() {
 
       <Pagination meta={data?.data?.meta} onPageChange={setPage} />
 
-      {deleteId && (
-        <ConfirmDeleteModal
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteId(null)}
-          isLoading={deleteMutation.isPending}
-        />
-      )}
-    </AdminLayout>
-  );
-}
-
-function ConfirmDeleteModal({ onConfirm, onCancel, isLoading }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative bg-white rounded-card shadow-xl p-6 max-w-sm w-full">
-        <h2 className="font-display font-bold text-neutral-900 text-lg mb-2">Hapus Berita?</h2>
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Hapus Berita?" maxWidth="max-w-sm">
         <p className="text-sm text-neutral-600 mb-6">
           Berita yang dihapus tidak dapat dikembalikan. Yakin ingin melanjutkan?
         </p>
         <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={onCancel} disabled={isLoading}>Batal</Button>
-          <Button variant="danger" onClick={onConfirm} loading={isLoading}>Hapus</Button>
+          <Button variant="ghost" onClick={() => setDeleteId(null)} disabled={deleteMutation.isPending}>Batal</Button>
+          <Button variant="danger" onClick={handleDelete} loading={deleteMutation.isPending}>Hapus</Button>
         </div>
-      </div>
-    </div>
+      </Modal>
+    </AdminLayout>
   );
 }

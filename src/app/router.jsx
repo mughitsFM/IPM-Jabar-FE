@@ -28,6 +28,7 @@ const AdminAspirasiPage = lazy(() => import("@/features/aspirasi/pages/admin/Adm
 const AdminArtikelPimpinanPage = lazy(() => import("@/features/artikel-pimpinan/pages/admin/AdminArtikelPimpinanPage"));
 const AdminManajemenPimpinanPage = lazy(() => import("@/features/pimpinan-admin/pages/AdminManajemenPimpinanPage")); // file 11
 const AdminPengaturanPage = lazy(() => import("@/features/pengaturan-akun/pages/admin/PengaturanAkunPage")); // file 08
+const AdminManajemenDesainPage = lazy(() => import("@/features/desain-admin/pages/AdminManajemenDesainPage")); // file 13
 
 // Pimpinan (BARU)
 const PimpinanLoginPage      = lazy(() => import("@/features/auth/pages/PimpinanLoginPage"));
@@ -100,6 +101,14 @@ export const routes = [
         ),
       },
       // { path: "pengaduan", element: (<ProtectedRoute allowedRoles={[ROLES.EDITOR]}><Suspense fallback={<Fallback />}><AdminPengaduanPage /></Suspense></ProtectedRoute>) },
+      {
+        path: "desain",
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.EDITOR]}>
+            <Suspense fallback={<Fallback />}><AdminManajemenDesainPage /></Suspense>
+          </ProtectedRoute>
+        ),
+      }, // file 13 — editor-only, konsisten pola berita/profil/proker
       {
         path: "artikel-pimpinan",
         element: (

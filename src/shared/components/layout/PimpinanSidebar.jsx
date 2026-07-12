@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import { firebaseAuthService } from "@/features/auth/services/firebaseAuthService";
 import { ROLE_LABELS } from "@/shared/constants/roles";
+import { useDesainGlobal } from "@/shared/hooks/useDesainPublic";
 
 const IconGear = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} {...props}>
@@ -82,6 +83,8 @@ function NotificationBell() {
 export default function PimpinanSidebar({ onClose }) {
   const { user }   = useAuthContext();
   const navigate   = useNavigate();
+  const { global } = useDesainGlobal();
+  const logoUrl = global?.logo_url;
 
   const handleLogout = async () => {
     await firebaseAuthService.logout();
@@ -93,9 +96,17 @@ export default function PimpinanSidebar({ onClose }) {
       {/* Header sidebar — shrink-0 supaya tidak ikut "diperas" flexbox */}
       <div className="px-5 py-5 border-b border-neutral-200 bg-brand-green-500 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-xs shrink-0">
-            IPM
-          </div>
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Logo PW IPM Jawa Barat"
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-sm shrink-0">
+              IPM
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="font-display font-bold text-white text-sm leading-tight truncate">
               {user?.label_lengkap ?? "Panel Pimpinan"}

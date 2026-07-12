@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
+import AuthShell from "../components/AuthShell";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import { ROLES } from "@/shared/constants/roles";
+import { useDesainGlobal } from "@/shared/hooks/useDesainPublic";
 
 export default function PimpinanLoginPage() {
   const { user, loading, sessionError } = useAuthContext();
   const navigate = useNavigate();
+  const { global } = useDesainGlobal();
+  const logoUrl = global?.logo_url;
 
   // Jika sudah login SEBAGAI PIMPINAN, langsung redirect ke dashboard pimpinan.
   // Kalau yang login ternyata akun Wilayah (editor/super_admin), JANGAN
@@ -20,57 +24,61 @@ export default function PimpinanLoginPage() {
   const loggedInAsWrongRole = !loading && user && user.role !== ROLES.PIMPINAN;
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center px-4 py-12">
-      {/* Card login */}
-      <div className="w-full max-w-sm">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-14 h-14 rounded-full bg-brand-green-500 flex items-center justify-center text-white font-display font-bold text-xl mb-4">
-            IPM
-          </div>
-          <h1 className="font-display font-bold text-neutral-900 text-2xl">Panel Pimpinan</h1>
-          <p className="text-sm text-neutral-600 mt-1">PW IPM Jawa Barat</p>
+    <AuthShell
+      eyebrow="Panel Pimpinan"
+      orgName="PW IPM Jawa Barat"
+      logoUrl={logoUrl}
+      panelTitle="Suarakan cabang dan rantingmu."
+      panelDescription="Kirim surat, laporkan program kerja, dan sampaikan aspirasi langsung ke Pimpinan Wilayah — kapan saja, di mana saja."
+      formTitle={loggedInAsWrongRole ? "Khusus Akun Pimpinan" : "Masuk ke Panel Pimpinan"}
+      formSubtitle={loggedInAsWrongRole ? undefined : "Selamat datang kembali, Pimpinan."}
+      footer={
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-green-600 font-medium transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Kembali ke halaman utama
+        </Link>
+      }
+    >
+      {/* Pesan sesi gagal, mis. akun baru saja dinonaktifkan admin */}
+      {sessionError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 mb-5 px-4 py-3 bg-red-50 border border-state-error/25 rounded-lg text-sm text-state-error animate-fade-in-down"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="shrink-0 mt-0.5" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <span>{sessionError}</span>
         </div>
+      )}
 
-        {/* Form */}
-        <div className="bg-white rounded-card shadow-sm border border-neutral-200 p-6">
-          {/* Pesan sesi gagal, mis. akun baru saja dinonaktifkan admin */}
-          {sessionError && (
-            <div
-              role="alert"
-              className="mb-5 px-4 py-3 bg-red-50 border border-state-error/30 rounded-lg text-sm text-state-error"
-            >
-              {sessionError}
-            </div>
-          )}
-
-          {loggedInAsWrongRole ? (
-            <div className="text-center space-y-3">
-              <p className="text-sm text-neutral-600">
-                Halaman ini khusus akun Pimpinan. Akun yang sedang login bukan akun Pimpinan.
-              </p>
-              <Link
-                to="/admin/login"
-                className="inline-block text-brand-green-500 hover:text-brand-green-600 font-semibold text-sm"
-              >
-                Masuk sebagai Admin →
-              </Link>
-            </div>
-          ) : (
-            <LoginForm
-              redirectTo="/pimpinan/dashboard"
-              emailPlaceholder="gunakan email yang didaftarkan admin wilayah"
-            />
-          )}
-        </div>
-
-        {/* Kembali ke publik */}
-        <p className="text-center text-sm text-neutral-500 mt-6">
-          <Link to="/" className="text-brand-green-500 hover:text-brand-green-600 font-semibold">
-            ← Kembali ke halaman utama
+      {loggedInAsWrongRole ? (
+        <div className="text-center lg:text-left space-y-4 rounded-card border border-neutral-200 bg-neutral-50 px-5 py-6">
+          <p className="text-sm text-neutral-600 leading-relaxed">
+            Halaman ini khusus untuk akun Pimpinan. Akun yang sedang login saat ini
+            bukan akun Pimpinan.
+          </p>
+          <Link
+            to="/admin/login"
+            className="inline-flex items-center gap-1.5 text-brand-green-600 hover:text-brand-green-700 font-semibold text-sm"
+          >
+            Masuk sebagai Admin
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
           </Link>
-        </p>
-      </div>
-    </div>
+        </div>
+      ) : (
+        <LoginForm
+          redirectTo="/pimpinan/dashboard"
+          emailPlaceholder="gunakan email yang didaftarkan admin wilayah"
+        />
+      )}
+    </AuthShell>
   );
 }

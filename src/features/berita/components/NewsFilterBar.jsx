@@ -4,7 +4,6 @@ const ALL_FILTERS = [
   { value: null,                        label: "Semua"                     },
   { value: KATEGORI_BERITA.KEGIATAN,    label: KATEGORI_BERITA_LABELS[KATEGORI_BERITA.KEGIATAN]    },
   { value: KATEGORI_BERITA.UMUM,        label: KATEGORI_BERITA_LABELS[KATEGORI_BERITA.UMUM]        },
-  { value: KATEGORI_BERITA.SURAT_RESMI, label: KATEGORI_BERITA_LABELS[KATEGORI_BERITA.SURAT_RESMI] },
 ];
 
 /**
@@ -23,9 +22,9 @@ export default function NewsFilterBar({ value, onChange }) {
             key={label}
             onClick={() => onChange({ ...value, kategori: v, page: 1 })}
             aria-pressed={active}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-150 min-h-[44px]
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 min-h-[44px]
               ${active
-                ? "bg-brand-green-500 text-white"
+                ? "bg-brand-green-500 text-white shadow-sm shadow-brand-green-500/30"
                 : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
               }`}
           >

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import PublicLayout from "@/shared/components/layout/PublicLayout";
 import NewsDetail from "../components/NewsDetail";
 import { useBeritaDetail } from "../hooks/useBeritaDetail";
@@ -12,6 +12,16 @@ export default function BeritaDetailPage() {
   return (
     <PublicLayout>
       <div className="container-site section">
+        <Link
+          to="/berita"
+          className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-green-500 hover:text-brand-green-600 mb-6 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Kembali ke Berita
+        </Link>
+
         {isLoading && (
           <div className="max-w-3xl mx-auto space-y-4">
             <SkeletonLine className="w-1/4 h-5" />

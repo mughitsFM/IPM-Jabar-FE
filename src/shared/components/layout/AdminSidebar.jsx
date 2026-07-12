@@ -3,8 +3,9 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import { firebaseAuthService } from "@/features/auth/services/firebaseAuthService";
 import { ROLES, ROLE_LABELS } from "@/shared/constants/roles";
+import { useDesainGlobal } from "@/shared/hooks/useDesainPublic";
 
-// ── Ikon (tidak berubah) ─────────────────────────────────────────────────
+// ── Ikon (dipisah supaya array NAV_GROUPS_* di bawah tetap ringkas) ─────────
 const IconDashboard = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -56,51 +57,69 @@ const IconAdminAccount = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
   </svg>
 );
+// Ikon "palet warna" — dipakai menu Manajemen Desain (13-manajemen-desain.md)
+const IconDesain = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="9" cy="10" r="1.15" fill="currentColor" stroke="none" />
+    <circle cx="14" cy="9" r="1.15" fill="currentColor" stroke="none" />
+    <circle cx="15.5" cy="13.5" r="1.15" fill="currentColor" stroke="none" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a3 3 0 003 3c.55 0 1-.45 1-1s-.45-1-1-1a1 1 0 110-2h1a4 4 0 10-4-4" />
+  </svg>
+);
 const IconChevronDown = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
   </svg>
 );
 
-// ── Menu Admin — Pengaturan Akun sudah TIDAK di sini lagi, pindah ke footer ──
+// ── Menu Admin (role "editor", ditampilkan sebagai "Admin") — file 12 §3 ───
+// Dikelompokkan per kategori. `label: null` = grup tanpa judul (item lepas
+// seperti Dashboard yang bukan bagian dari ketiga kategori, dan TIDAK
+// dijadikan dropdown). Grup dengan `label` diisi akan otomatis dirender
+// sebagai dropdown yang bisa dibuka/tutup.
+// Pengaturan Akun sudah TIDAK di sini lagi, pindah ke footer (sebelah avatar).
 const NAV_GROUPS_ADMIN = [
   {
     label: null,
     items: [
       { to: "/admin/dashboard", label: "Dashboard", icon: <IconDashboard /> },
-      { to: "/admin/surat", label: "Surat Menyurat", icon: <IconSurat /> },
-      { to: "/admin/aspirasi", label: "Aspirasi", icon: <IconAspirasi /> },
+      { to: "/admin/surat",    label: "Surat Menyurat", icon: <IconSurat /> },
+      { to: "/admin/aspirasi", label: "Aspirasi",       icon: <IconAspirasi /> },
     ],
   },
   {
     label: "Manajemen Konten",
     items: [
-      { to: "/admin/profil", label: "Profil Kepengurusan", icon: <IconProfil /> },
-      { to: "/admin/berita", label: "Berita", icon: <IconBerita /> },
-      { to: "/admin/proker", label: "Program Kerja", icon: <IconProker /> },
+      { to: "/admin/profil",             label: "Profil Kepengurusan", icon: <IconProfil /> },
+      { to: "/admin/berita",           label: "Berita",                  icon: <IconBerita /> },
+      { to: "/admin/proker",           label: "Program Kerja",           icon: <IconProker /> },
     ],
   },
   {
-    label: "Manajemen Visual Publik",
-    items: [],
+    label: "Manajemen Publik",
+    items: [
+      { to: "/admin/desain", label: "Manajemen Desain", icon: <IconDesain /> }, // 13-manajemen-desain.md
+    ],
   },
   {
     label: "Manajemen Pimpinan",
     items: [
-      { to: "/admin/manajemen-pimpinan", label: "Manajemen Pimpinan", icon: <IconPimpinan /> },
+      { to: "/admin/manajemen-pimpinan", label: "Manajemen Pimpinan",  icon: <IconPimpinan /> },
       { to: "/admin/artikel-pimpinan", label: "Review Artikel Pimpinan", icon: <IconReviewArtikel /> },
     ],
   },
 ];
 
-// ── Menu Superadmin — Pengaturan Akun juga pindah ke footer ────────────────
+// ── Menu Superadmin — hanya beberapa panel, dibiarkan flat (file 12 §4) ────
+// Pengaturan Akun sudah TIDAK di sini lagi, pindah ke footer (sebelah avatar).
 const NAV_GROUPS_SUPERADMIN = [
   {
     label: null,
     items: [
-      { to: "/admin/dashboard-superadmin", label: "Dashboard", icon: <IconDashboard /> },
-      { to: "/admin/pengguna", label: "Manajemen Akun Admin", icon: <IconAdminAccount /> },
-      { to: "/admin/manajemen-pimpinan", label: "Manajemen Akun Pimpinan", icon: <IconPimpinan /> },
+      { to: "/admin/dashboard-superadmin", label: "Dashboard",               icon: <IconDashboard /> },
+      { to: "/admin/pengguna",             label: "Manajemen Akun Admin",    icon: <IconAdminAccount /> },
+      { to: "/admin/manajemen-pimpinan",   label: "Manajemen Akun Pimpinan", icon: <IconPimpinan /> },
     ],
   },
 ];
@@ -109,10 +128,14 @@ export default function AdminSidebar({ onClose }) {
   const { user }   = useAuthContext();
   const navigate   = useNavigate();
   const location   = useLocation();
+  const { global } = useDesainGlobal();
+  const logoUrl = global?.logo_url;
 
   const isSuperAdmin = user?.role === ROLES.SUPER_ADMIN;
   const groups = isSuperAdmin ? NAV_GROUPS_SUPERADMIN : NAV_GROUPS_ADMIN;
 
+  // Grup berlabel = dropdown. Default: terbuka otomatis jika salah satu
+  // link di dalamnya sedang aktif (sesuai path saat ini), selebihnya tertutup.
   const [openGroups, setOpenGroups] = useState(() => {
     const state = {};
     groups.forEach((group) => {
@@ -134,13 +157,24 @@ export default function AdminSidebar({ onClose }) {
   };
 
   return (
+    // h-screen + sticky top-0 + overflow-hidden = tinggi sidebar terkunci ke
+    // viewport dan TIDAK ikut scroll bareng layout utama. Nav di dalamnya
+    // yang scroll sendiri (lihat <nav> di bawah), footer selalu nempel bawah.
     <aside className="w-64 h-screen sticky top-0 bg-white border-r border-neutral-200 flex flex-col overflow-hidden">
       {/* Header sidebar — shrink-0 supaya tidak ikut "diperas" flexbox */}
       <div className="px-5 py-5 border-b border-neutral-200 bg-brand-blue-500 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-brand-gold-500 flex items-center justify-center text-neutral-900 font-bold text-xs shrink-0">
-            IPM
-          </div>
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Logo PW IPM Jawa Barat"
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-sm shrink-0">
+              IPM
+            </div>
+          )}
           <div>
             <p className="font-display font-bold text-white text-sm leading-tight">
               {isSuperAdmin ? "Panel Superadmin" : "Panel Admin"}
@@ -150,9 +184,15 @@ export default function AdminSidebar({ onClose }) {
         </div>
       </div>
 
-      {/* Nav items — flex-1 min-h-0 overflow-y-auto = scroll sendiri, terpisah dari footer */}
+      {/* Nav items, dikelompokkan per kategori. Grup berlabel = dropdown.
+          min-h-0 WAJIB di sini — tanpa ini flex item tidak akan pernah
+          menyusut di bawah tinggi kontennya, jadi overflow-y-auto tidak
+          pernah kepakai dan dropdown yang mekar malah mendorong seluruh
+          halaman. Dengan min-h-0, nav ini scroll sendiri, terpisah dari
+          header & footer yang tetap diam. */}
       <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4" aria-label="Navigasi admin">
         {groups.map((group, groupIdx) => {
+          // Grup kosong (mis. "Manajemen Publik" yang belum ada isinya) diskip
           if (group.items.length === 0) return null;
 
           const isDropdown = Boolean(group.label);
@@ -202,7 +242,8 @@ export default function AdminSidebar({ onClose }) {
         })}
       </nav>
 
-      {/* User info (dengan tombol Pengaturan Akun) + logout — shrink-0, selalu nempel di bawah */}
+      {/* User info (dengan tombol Pengaturan Akun) + logout — shrink-0,
+          selalu nempel di bawah, tidak pernah ikut ter-scroll. */}
       <div className="px-4 py-4 border-t border-neutral-200 shrink-0">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-full bg-brand-blue-500/10 flex items-center justify-center text-brand-blue-500 font-bold text-xs shrink-0">

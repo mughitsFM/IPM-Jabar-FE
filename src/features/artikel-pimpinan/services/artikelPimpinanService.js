@@ -3,11 +3,27 @@ import { apiClient } from "@/shared/lib/axiosClient";
 
 function toFormData(payload) {
   const fd = new FormData();
-  if (payload.judul !== undefined) fd.append("judul", payload.judul);
-  if (payload.slug !== undefined) fd.append("slug", payload.slug);
-  if (payload.konten !== undefined) fd.append("konten", payload.konten);
-  if (payload.kategori !== undefined) fd.append("kategori", payload.kategori);
-  if (payload.thumbnailFile) fd.append("thumbnail", payload.thumbnailFile);
+  const { thumbnailFile, ...fields } = payload;
+
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    if (Array.isArray(value)) {
+      // 'tags' dikirim sebagai string JSON — sama seperti beritaService,
+      // diparse balik di backend (_normalize_list_fields di views.py).
+      fd.append(key, JSON.stringify(value));
+      return;
+    }
+
+    if (value !== "") {
+      fd.append(key, value);
+    }
+  });
+
+  if (thumbnailFile) {
+    fd.append("thumbnail", thumbnailFile);
+  }
+
   return fd;
 }
 
@@ -44,6 +60,19 @@ export const artikelPimpinanService = {
 
   tarik: (id) =>
     apiClient.post(`/artikel-pimpinan/${id}/tarik/`).then((r) => r.data),
+
+  uploadContentImage: (file) => {
+    const fd = new FormData();
+    fd.append("image", file);
+    return apiClient
+      .post("/artikel-pimpinan/upload-gambar/", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
+  },
+
+  checkSlug: (slug) =>
+    apiClient.get("/artikel-pimpinan/cek-slug/", { params: { slug } }).then((r) => r.data),
 
   // ── Sisi Wilayah/Admin ─────────────────────────────────────────────────
   getAdminList: (params) =>
