@@ -33,20 +33,23 @@ const IconAspirasi = () => (
 
 function DaftarArtikelTerbaru({ items }) {
   return (
-    <div className="bg-white rounded-card border border-neutral-200">
+    <div className="bg-white rounded-card border border-neutral-200 min-w-0">
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
         <h3 className="font-display font-bold text-neutral-900">Artikel Terbaru</h3>
-        <Link to="/pimpinan/artikel" className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">Lihat Semua →</Link>
+        <Link to="/pimpinan/artikel" className="group inline-flex items-center gap-1 text-xs text-brand-green-600 hover:text-brand-green-700 font-semibold">
+          Lihat Semua
+          <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+        </Link>
       </div>
       <ul className="divide-y divide-neutral-100">
         {(!items || items.length === 0) && (
-          <li className="px-5 py-6 text-sm text-neutral-400 text-center">Belum ada artikel yang ditulis.</li>
+          <li className="px-5 py-10 text-sm text-neutral-400 text-center">Belum ada artikel yang ditulis.</li>
         )}
         {items?.map((a) => (
           <li key={a.id} className="flex items-center gap-3 px-5 py-3">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-neutral-900 truncate">{a.judul}</p>
-              <p className="text-xs text-neutral-400">{formatShort(a.updated_at)}</p>
+              <p className="text-xs text-neutral-400 mt-0.5">{formatShort(a.updated_at)}</p>
             </div>
             <ArtikelStatusBadge status={a.status} />
           </li>
@@ -58,14 +61,17 @@ function DaftarArtikelTerbaru({ items }) {
 
 function DaftarSuratTerbaru({ items, currentUid }) {
   return (
-    <div className="bg-white rounded-card border border-neutral-200">
+    <div className="bg-white rounded-card border border-neutral-200 min-w-0">
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
         <h3 className="font-display font-bold text-neutral-900">Surat Masuk Terbaru</h3>
-        <Link to="/pimpinan/surat" className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">Lihat Semua →</Link>
+        <Link to="/pimpinan/surat" className="group inline-flex items-center gap-1 text-xs text-brand-green-600 hover:text-brand-green-700 font-semibold">
+          Lihat Semua
+          <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+        </Link>
       </div>
       <ul className="divide-y divide-neutral-100">
         {(!items || items.length === 0) && (
-          <li className="px-5 py-6 text-sm text-neutral-400 text-center">Belum ada surat masuk.</li>
+          <li className="px-5 py-10 text-sm text-neutral-400 text-center">Belum ada surat masuk.</li>
         )}
         {items?.map((s) => {
           const belumDibaca = !s.dibaca_oleh?.includes(currentUid);
@@ -107,14 +113,14 @@ export default function PimpinanDashboardPage() {
     <PimpinanLayout title="Dashboard">
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="font-display font-bold text-neutral-900 text-xl">
+          <h2 className="font-display font-bold text-neutral-900 text-xl sm:text-2xl">
             {sapaan}, {user?.nama?.split(" ")[0]} 👋
           </h2>
-          <p className="text-sm text-neutral-500 mt-1">{user?.label_lengkap}</p>
+          <p className="text-sm text-neutral-500 mt-1.5">{user?.label_lengkap}</p>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
         <StatCard
           label="Artikel Draft" value={s?.total_artikel_draft} color="neutral"
           linkTo="/pimpinan/artikel" icon={<IconArtikelDraft />}
@@ -133,12 +139,12 @@ export default function PimpinanDashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <DaftarArtikelTerbaru items={data?.data?.artikel_terbaru} />
         <DaftarSuratTerbaru items={data?.data?.surat_masuk_terbaru} currentUid={user?.uid} />
       </div>
 
-      <div className="mt-6 p-4 bg-neutral-50 border border-neutral-200 rounded-card">
+      <div className="mt-6 p-5 bg-gradient-to-br from-neutral-50 to-white border border-neutral-200 rounded-card">
         <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">Aksi Cepat</p>
         <div className="flex flex-wrap gap-3">
           <Link to="/pimpinan/artikel/baru" className="btn-primary text-sm py-2">+ Tulis Artikel</Link>

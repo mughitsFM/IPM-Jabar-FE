@@ -457,7 +457,7 @@ export default function NewsForm({ initialData = null, createMutation, updateMut
       </div>
 
       {/* ── Action bar ────────────────────────────────────────────────────── */}
-      <div className="sticky bottom-0 -mx-6 -mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-6 py-4">
+      <div className="sticky bottom-0 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 sm:px-6 py-4">
         {scheduleOpen && (
           <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-brand-blue-500/5 border border-brand-blue-500/20 p-3">
             <div className="flex-1 min-w-[220px]">

@@ -56,10 +56,10 @@ export default function AdminManajemenDesainPage() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Manajemen Desain">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-display font-bold text-2xl text-neutral-900">Manajemen Desain</h1>
+          {/* <h1 className="font-display font-bold text-2xl text-neutral-900">Manajemen Desain</h1> */}
           <p className="text-sm text-neutral-600 mt-1">
             Atur logo, warna, font, isi navbar/footer, dan hero 4 halaman publik —
             tanpa perlu ubah kode.

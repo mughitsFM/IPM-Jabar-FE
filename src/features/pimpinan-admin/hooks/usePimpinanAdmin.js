@@ -19,10 +19,10 @@ export function usePimpinanDetail(uid) {
   });
 }
 
-export function useCreatePimpinan() {
+export function useGenerateAkunPimpinan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload) => pimpinanAdminService.create(payload),
+    mutationFn: (jumlah) => pimpinanAdminService.generate(jumlah),
     onSuccess: () => qc.invalidateQueries({ queryKey: LIST_KEY }),
   });
 }

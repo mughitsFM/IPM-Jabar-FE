@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "@/shared/components/ui/Modal";
 import Button from "@/shared/components/ui/Button";
 import { useOverrideKredensialPimpinan } from "../hooks/usePimpinanAdmin";
 
@@ -13,7 +13,7 @@ export default function ModalOverrideKredensial({ pimpinan, onClose }) {
 
   if (!konfirmasi) {
     return (
-      <Modal title={`Ubah Kredensial — ${pimpinan.label_lengkap}`} onClose={onClose}>
+      <Modal open title={`Ubah Kredensial — ${pimpinan.label_lengkap}`} onClose={onClose}>
         <div className="space-y-4">
           <label className="flex items-center gap-2 text-sm font-medium text-neutral-700 min-h-[44px]">
             <input type="checkbox" checked={ubahEmail} onChange={(e) => setUbahEmail(e.target.checked)} className="w-4 h-4" />
@@ -49,7 +49,7 @@ export default function ModalOverrideKredensial({ pimpinan, onClose }) {
   }
 
   return (
-    <Modal title="Konfirmasi Perubahan" onClose={onClose}>
+    <Modal open title="Konfirmasi Perubahan" onClose={onClose}>
       <div className="p-3 rounded-lg border border-state-error/30 bg-red-50">
         <p className="text-sm text-neutral-700">
           Anda akan mengubah {ubahEmail && "email"}{ubahEmail && ubahPassword && " dan "}{ubahPassword && "password"} akun{" "}

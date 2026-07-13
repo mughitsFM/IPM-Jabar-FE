@@ -27,15 +27,15 @@ export default function SuperadminDashboardPage() {
   return (
     <AdminLayout title="Dashboard Superadmin">
       <div className="mb-8">
-        <h2 className="font-display font-bold text-neutral-900 text-xl">
+        <h2 className="font-display font-bold text-neutral-900 text-xl sm:text-2xl">
           {sapaan}, {user?.nama?.split(" ")[0] ?? "Superadmin"} 👋
         </h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <p className="text-sm text-neutral-500 mt-1.5">
           Ini ringkasan tata kelola akun Admin dan Pimpinan di seluruh sistem.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-10">
         <StatCard
           label="Total Admin" value={totalAdmin} color="blue" linkTo="/admin/pengguna"
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
@@ -50,7 +50,7 @@ export default function SuperadminDashboardPage() {
         />
       </div>
 
-      <div className="mt-6 p-4 bg-neutral-50 border border-neutral-200 rounded-card">
+      <div className="mt-6 p-5 bg-gradient-to-br from-neutral-50 to-white border border-neutral-200 rounded-card">
         <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">Aksi Cepat</p>
         <div className="flex flex-wrap gap-3">
           <Link to="/admin/pengguna" className="btn-primary text-sm py-2">+ Tambah Akun Admin</Link>

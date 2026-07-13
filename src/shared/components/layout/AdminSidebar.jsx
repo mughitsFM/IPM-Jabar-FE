@@ -72,6 +72,11 @@ const IconChevronDown = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
   </svg>
 );
+const IconClose = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
 // ── Menu Admin (role "editor", ditampilkan sebagai "Admin") — file 12 §3 ───
 // Dikelompokkan per kategori. `label: null` = grup tanpa judul (item lepas
@@ -162,25 +167,35 @@ export default function AdminSidebar({ onClose }) {
     // yang scroll sendiri (lihat <nav> di bawah), footer selalu nempel bawah.
     <aside className="w-64 h-screen sticky top-0 bg-white border-r border-neutral-200 flex flex-col overflow-hidden">
       {/* Header sidebar — shrink-0 supaya tidak ikut "diperas" flexbox */}
-      <div className="px-5 py-5 border-b border-neutral-200 bg-brand-blue-500 shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="relative px-5 py-5 border-b border-neutral-200 bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 shrink-0">
+        <div className="flex items-center gap-2.5">
           {logoUrl ? (
             <img
               src={logoUrl}
               alt="Logo PW IPM Jawa Barat"
-              className="w-9 h-9 rounded-full object-cover shrink-0"
+              className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-white/25"
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-sm shrink-0">
+            <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm ring-2 ring-white/25 flex items-center justify-center text-white font-display font-bold text-sm shrink-0">
               IPM
             </div>
           )}
-          <div>
-            <p className="font-display font-bold text-white text-sm leading-tight">
+          <div className="min-w-0 flex-1">
+            <p className="font-display font-bold text-white text-sm leading-tight truncate">
               {isSuperAdmin ? "Panel Superadmin" : "Panel Admin"}
             </p>
-            <p className="text-brand-blue-500/80 text-xs text-white/70">PW IPM Jawa Barat</p>
+            <p className="text-xs text-white/70 truncate">PW IPM Jawa Barat</p>
           </div>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup menu"
+              className="shrink-0 -mr-1 w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <IconClose className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -224,15 +239,15 @@ export default function AdminSidebar({ onClose }) {
                       to={to}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 min-h-[44px]
+                        `flex items-center gap-3 pl-2.5 pr-3 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 min-h-[44px] border-l-[3px]
                         ${isActive
-                          ? "bg-brand-blue-500/10 text-brand-blue-500"
-                          : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                          ? "bg-brand-blue-500/10 text-brand-blue-500 border-brand-blue-500"
+                          : "border-transparent text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
                         }`
                       }
                     >
-                      {icon}
-                      {label}
+                      <span className="shrink-0">{icon}</span>
+                      <span className="leading-snug">{label}</span>
                     </NavLink>
                   ))}
                 </div>
@@ -245,14 +260,14 @@ export default function AdminSidebar({ onClose }) {
       {/* User info (dengan tombol Pengaturan Akun) + logout — shrink-0,
           selalu nempel di bawah, tidak pernah ikut ter-scroll. */}
       <div className="px-4 py-4 border-t border-neutral-200 shrink-0">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 bg-neutral-50 rounded-xl p-2">
           <div className="w-8 h-8 rounded-full bg-brand-blue-500/10 flex items-center justify-center text-brand-blue-500 font-bold text-xs shrink-0">
             {user?.nama?.charAt(0)?.toUpperCase() ?? "A"}
           </div>
 
           <div className="overflow-hidden flex-1">
             <p className="text-sm font-semibold text-neutral-900 truncate">{user?.nama ?? user?.email}</p>
-            <p className="text-xs text-neutral-400">{ROLE_LABELS[user?.role] ?? user?.role}</p>
+            <p className="text-xs text-neutral-400 truncate">{ROLE_LABELS[user?.role] ?? user?.role}</p>
           </div>
 
           <NavLink
@@ -261,10 +276,10 @@ export default function AdminSidebar({ onClose }) {
             aria-label="Pengaturan Akun"
             title="Pengaturan Akun"
             className={({ isActive }) =>
-              `shrink-0 w-11 h-11 flex items-center justify-center rounded-lg transition-colors duration-150
+              `shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors duration-150
               ${isActive
                 ? "bg-brand-blue-500/10 text-brand-blue-500"
-                : "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900"
+                : "text-neutral-400 hover:bg-white hover:text-neutral-900"
               }`
             }
           >

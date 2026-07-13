@@ -41,9 +41,9 @@ export default function ArsipArtikelList() {
 
   return (
     <div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {results.map((a) => (
-          <div key={a.id} className="bg-white border border-neutral-200 rounded-card p-4 flex flex-col">
+          <div key={a.id} className="bg-white border border-neutral-200 rounded-card p-4 flex flex-col min-w-0">
             <div className="flex items-start justify-between gap-2 mb-2">
               <h4 className="font-display font-bold text-neutral-900 text-sm leading-snug line-clamp-2">
                 {a.judul}

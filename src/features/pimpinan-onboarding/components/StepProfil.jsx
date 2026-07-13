@@ -5,9 +5,13 @@ import { validateGambar } from "@/shared/utils/fileValidator";
 
 import { onboardingService } from "../services/onboardingService";
 
+// [PERUBAHAN] Field "nama" dipindah ke StepIdentitasPimpinan (digabung dengan
+// level & nama_wilayah) — supaya nama jadi wajib diisi sekali di awal, bukan
+// opsional di sini lalu berpotensi kosong saat submit gabungan onboarding.
+// Step ini sekarang hanya menangani no_hp & foto profil, yang memang boleh
+// dilengkapi belakangan lewat Pengaturan Akun (makanya tetap ada tombol Lewati).
 export default function StepProfil({ onNext, onSkip }) {
   const { user, refreshSession } = useAuthContext();
-  const [nama, setNama] = useState(user?.nama ?? "");
   const [noHp, setNoHp] = useState(user?.no_hp ?? "");
   const [foto, setFoto] = useState(null);
   const [preview, setPreview] = useState(user?.foto_profil_url ?? null);
@@ -37,7 +41,6 @@ export default function StepProfil({ onNext, onSkip }) {
 
     try {
       const formData = new FormData();
-      if (nama.trim()) formData.append("nama", nama.trim());
       formData.append("no_hp", noHp.trim());
       if (foto) formData.append("foto_profil", foto);
 
@@ -55,7 +58,7 @@ export default function StepProfil({ onNext, onSkip }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-2">
         <h2 className="font-display text-lg font-semibold text-neutral-900">
-          Lengkapi Profil Umum
+          Foto & No. HP (Opsional)
         </h2>
         <p className="text-sm text-neutral-500">Boleh dilengkapi nanti lewat Pengaturan Akun.</p>
       </div>
@@ -67,7 +70,7 @@ export default function StepProfil({ onNext, onSkip }) {
               <img src={preview} alt="Pratinjau foto profil" className="h-full w-full object-cover" />
             ) : (
               <span className="text-2xl font-semibold text-neutral-400">
-                {nama ? nama.charAt(0).toUpperCase() : "?"}
+                {user?.nama ? user.nama.charAt(0).toUpperCase() : "?"}
               </span>
             )}
           </div>
@@ -81,19 +84,6 @@ export default function StepProfil({ onNext, onSkip }) {
             Ubah
           </span>
         </label>
-      </div>
-
-      <div>
-        <label className="form-label" htmlFor="nama">
-          Nama
-        </label>
-        <input
-          id="nama"
-          className="input-field"
-          value={nama}
-          onChange={(e) => setNama(e.target.value)}
-          placeholder="Nama penanggung jawab"
-        />
       </div>
 
       <div>

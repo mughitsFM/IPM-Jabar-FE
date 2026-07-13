@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Button from "@/shared/components/ui/Button";
+import BottomSheetModal from "@/shared/components/ui/BottomSheetModal";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import SuratListTable from "../../components/SuratListTable";
 import SuratDetailPanel from "../../components/SuratDetailPanel";
@@ -79,23 +80,23 @@ export default function AdminSuratPage() {
     <AdminLayout title="Surat Menyurat">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
         <div>
-          <h2 className="font-display font-bold text-neutral-900 text-lg">Surat Menyurat Wilayah</h2>
+          {/* <h2 className="font-display font-bold text-neutral-900 text-lg sm:text-xl">Surat Menyurat Wilayah</h2> */}
           <p className="text-sm text-neutral-500 mt-1">
-            Kotak masuk/keluar bersama untuk seluruh Admin & Superadmin Wilayah.
+            Kotak surat masuk/keluar antar pimpinan se-jawabarat
           </p>
         </div>
-        <Button onClick={() => setShowCompose(true)}>+ Tulis Surat</Button>
+        <Button onClick={() => setShowCompose(true)} className="shrink-0">+ Tulis Surat</Button>
       </div>
 
-      <p className="text-xs text-neutral-400 italic mb-4">
+      {/* <p className="text-xs text-neutral-400 italic mb-4">
         Surat ke Wilayah adalah kotak masuk bersama — dapat dilihat & dibalas oleh seluruh Admin/Superadmin PW IPM Jabar.
-      </p>
+      </p> */}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <div className="flex gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => { setTab("masuk"); setPage(1); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors min-h-[44px] ${
               tab === "masuk" ? "bg-brand-blue-500 text-white" : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
             }`}
           >
@@ -110,7 +111,7 @@ export default function AdminSuratPage() {
           </button>
           <button
             onClick={() => { setTab("keluar"); setPage(1); }}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors min-h-[44px] ${
               tab === "keluar" ? "bg-brand-blue-500 text-white" : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
             }`}
           >
@@ -118,11 +119,11 @@ export default function AdminSuratPage() {
           </button>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" loading={unduhState.zip} onClick={() => handleUnduh("zip")}>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" loading={unduhState.zip} onClick={() => handleUnduh("zip")} className="flex-1 sm:flex-none">
             Unduh Semua (ZIP)
           </Button>
-          <Button loading={unduhState.excel} onClick={() => handleUnduh("excel")}>
+          <Button loading={unduhState.excel} onClick={() => handleUnduh("excel")} className="flex-1 sm:flex-none">
             Unduh Rekap Excel
           </Button>
         </div>
@@ -147,17 +148,9 @@ export default function AdminSuratPage() {
       )}
 
       {showCompose && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-card rounded-t-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
-              <h3 className="font-display font-bold text-neutral-900">Tulis Surat Baru</h3>
-              <button onClick={() => setShowCompose(false)} className="text-neutral-400 hover:text-neutral-600 text-xl leading-none px-2">×</button>
-            </div>
-            <div className="px-5 py-4">
-              <SuratForm onSubmit={handleKirim} onCancel={() => setShowCompose(false)} isSubmitting={kirim.isPending} />
-            </div>
-          </div>
-        </div>
+        <BottomSheetModal open={showCompose} onClose={() => setShowCompose(false)} title="Tulis Surat Baru">
+          <SuratForm onSubmit={handleKirim} onCancel={() => setShowCompose(false)} isSubmitting={kirim.isPending} />
+        </BottomSheetModal>
       )}
     </AdminLayout>
   );

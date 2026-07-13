@@ -1,137 +1,76 @@
 import { useState } from "react";
-import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 
-import { useAuthContext } from "@/app/providers/AuthProvider";
-import { auth } from "@/shared/lib/firebaseClient";
-
-import { onboardingService } from "../services/onboardingService";
-
-export default function StepEmail({ onNext, onSkip }) {
-  const { refreshSession } = useAuthContext();
-  const [subState, setSubState] = useState("belum_minta_kode"); // | "menunggu_konfirmasi"
+/**
+ * [PERUBAHAN] Sebelumnya step ini pakai alur OTP (mintaKodeUbahEmail /
+ * konfirmasiKodeUbahEmail) yang mengirim kode ke EMAIL BARU untuk verifikasi
+ * kepemilikan. Itu cocok untuk ganti email di "Pengaturan Akun" SETELAH
+ * onboarding (email lama sudah asli & terpakai) — tapi tidak cocok di sini:
+ * email saat ini masih placeholder hasil generate admin
+ * (mis. pimpinan-xxxx@akun.ipmjabar.or.id), dan email pengganti biasanya
+ * justru yang BELUM diverifikasi kepemilikannya lewat kode OTP apa pun,
+ * karena tidak ada mekanisme kirim OTP di titik ini.
+ *
+ * Sesuai kontrak backend (PimpinanOnboardingLengkapiProfilView /
+ * OnboardingLengkapiProfilSerializer), email di sini dikirim LANGSUNG tanpa
+ * OTP, digabung SEKALIGUS dengan nama/level/nama_wilayah (dari
+ * StepIdentitasPimpinan) dan password baru (dari StepPassword) dalam SATU
+ * PATCH — lihat onSubmit yang dipanggil dari OnboardingPage.
+ *
+ * "Gunakan Email Saat Ini" BUKAN tombol lewati langkah — submit gabungan
+ * tetap wajib terjadi (supaya level/nama_wilayah/password ikut tersimpan),
+ * hanya saja email yang dikirim adalah email yang sedang aktif (tidak diubah).
+ */
+export default function StepEmail({ currentEmail, onSubmit, isSubmitting, error }) {
   const [emailBaru, setEmailBaru] = useState("");
-  const [passwordSaatIni, setPasswordSaatIni] = useState("");
-  const [kode, setKode] = useState("");
-  const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleMintaKode(e) {
+  function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      const credential = EmailAuthProvider.credential(auth.currentUser.email, passwordSaatIni);
-      await reauthenticateWithCredential(auth.currentUser, credential);
-      await onboardingService.mintaKodeUbahEmail(emailBaru);
-      setSubState("menunggu_konfirmasi");
-    } catch (err) {
-      if (err?.code === "auth/wrong-password") {
-        setError("Password saat ini salah.");
-      } else {
-        setError(err?.response?.data?.message ?? "Gagal mengirim kode verifikasi. Coba lagi.");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(emailBaru.trim() || null);
   }
 
-  async function handleKonfirmasi(e) {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await onboardingService.konfirmasiKodeUbahEmail(kode);
-      await refreshSession();
-      onNext();
-    } catch (err) {
-      setError(err?.response?.data?.message ?? "Kode verifikasi tidak valid.");
-    } finally {
-      setIsSubmitting(false);
-    }
+  function handleGunakanEmailSaatIni() {
+    onSubmit(null);
   }
 
   return (
-    <div className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-2">
         <h2 className="font-display text-lg font-semibold text-neutral-900">Perbarui Email</h2>
-        <p className="text-sm text-neutral-500">Opsional — boleh dilakukan nanti lewat Pengaturan Akun.</p>
+        <p className="text-sm text-neutral-500">
+          Email saat ini: <span className="font-medium text-neutral-700">{currentEmail}</span>.
+          Boleh diganti sekarang atau tetap dipakai — bisa diubah lagi nanti lewat Pengaturan Akun.
+        </p>
       </div>
 
-      {subState === "belum_minta_kode" && (
-        <form onSubmit={handleMintaKode} className="space-y-4">
-          <div>
-            <label className="form-label" htmlFor="email_baru">
-              Email Baru
-            </label>
-            <input
-              id="email_baru"
-              type="email"
-              className="input-field"
-              value={emailBaru}
-              onChange={(e) => setEmailBaru(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="form-label" htmlFor="password_saat_ini">
-              Password Saat Ini
-            </label>
-            <input
-              id="password_saat_ini"
-              type="password"
-              className="input-field"
-              value={passwordSaatIni}
-              onChange={(e) => setPasswordSaatIni(e.target.value)}
-              required
-            />
-          </div>
+      <div>
+        <label className="form-label" htmlFor="email_baru">
+          Email Baru (opsional)
+        </label>
+        <input
+          id="email_baru"
+          type="email"
+          className="input-field"
+          value={emailBaru}
+          onChange={(e) => setEmailBaru(e.target.value)}
+          placeholder={currentEmail}
+        />
+      </div>
 
-          {error && <p className="form-error">{error}</p>}
+      {error && <p className="form-error">{error}</p>}
 
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onSkip} className="btn-outline flex-1" disabled={isSubmitting}>
-              Lewati
-            </button>
-            <button type="submit" className="btn-primary flex-1" disabled={isSubmitting}>
-              {isSubmitting ? "Mengirim..." : "Kirim Kode"}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {subState === "menunggu_konfirmasi" && (
-        <form onSubmit={handleKonfirmasi} className="space-y-4">
-          <p className="text-sm text-neutral-600">
-            Kode dikirim ke email baru Anda, bukan email lama — ini untuk memastikan Anda benar-benar
-            memiliki akses ke email tersebut.
-          </p>
-          <div>
-            <label className="form-label" htmlFor="kode_otp">
-              Kode Verifikasi
-            </label>
-            <input
-              id="kode_otp"
-              inputMode="numeric"
-              maxLength={6}
-              className="input-field tracking-widest text-center"
-              value={kode}
-              onChange={(e) => setKode(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && <p className="form-error">{error}</p>}
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onSkip} className="btn-outline flex-1" disabled={isSubmitting}>
-              Lewati
-            </button>
-            <button type="submit" className="btn-primary flex-1" disabled={isSubmitting}>
-              {isSubmitting ? "Memverifikasi..." : "Konfirmasi"}
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={handleGunakanEmailSaatIni}
+          className="btn-outline flex-1"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Menyimpan..." : "Gunakan Email Saat Ini"}
+        </button>
+        <button type="submit" className="btn-primary flex-1" disabled={isSubmitting}>
+          {isSubmitting ? "Menyimpan..." : "Simpan & Lanjut"}
+        </button>
+      </div>
+    </form>
   );
 }

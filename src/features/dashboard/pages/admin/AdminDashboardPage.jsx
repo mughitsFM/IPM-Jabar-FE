@@ -39,15 +39,15 @@ export default function AdminDashboardPage() {
   return (
     <AdminLayout title="Dashboard">
       <div className="mb-8">
-        <h2 className="font-display font-bold text-neutral-900 text-xl">
+        <h2 className="font-display font-bold text-neutral-900 text-xl sm:text-2xl">
           {sapaan}, {user?.nama?.split(" ")[0] ?? "Admin"} 👋
         </h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <p className="text-sm text-neutral-500 mt-1.5">
           Ini ringkasan kondisi website PW IPM Jawa Barat hari ini.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
         <StatCard
           label="Total Berita" value={totalBerita} color="green" linkTo="/admin/berita"
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>}
@@ -66,21 +66,24 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-white rounded-card border border-neutral-200">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="bg-white rounded-card border border-neutral-200 min-w-0">
           <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
             <h3 className="font-display font-bold text-neutral-900">Berita Terbaru</h3>
-            <Link to="/admin/berita" className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">Lihat Semua →</Link>
+            <Link to="/admin/berita" className="group inline-flex items-center gap-1 text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">
+              Lihat Semua
+              <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+            </Link>
           </div>
           <ul className="divide-y divide-neutral-100">
             {beritaTerbaru?.data?.results?.length === 0 && (
-              <li className="px-5 py-6 text-sm text-neutral-400 text-center">Belum ada berita.</li>
+              <li className="px-5 py-10 text-sm text-neutral-400 text-center">Belum ada berita.</li>
             )}
             {beritaTerbaru?.data?.results?.map((b) => (
               <li key={b.id} className="flex items-center gap-3 px-5 py-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-neutral-900 truncate">{b.judul}</p>
-                  <p className="text-xs text-neutral-400">{b.published_at ? formatShort(b.published_at) : "Draft"}</p>
+                  <p className="text-xs text-neutral-400 mt-0.5">{b.published_at ? formatShort(b.published_at) : "Draft"}</p>
                 </div>
                 <Badge label={STATUS_BERITA_LABELS[b.status] ?? b.status} colorClass={STATUS_BERITA_COLORS[b.status]} />
               </li>
@@ -88,20 +91,23 @@ export default function AdminDashboardPage() {
           </ul>
         </div>
 
-        <div className="bg-white rounded-card border border-neutral-200">
+        <div className="bg-white rounded-card border border-neutral-200 min-w-0">
           <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
             <h3 className="font-display font-bold text-neutral-900">Aspirasi Terbaru</h3>
-            <Link to="/admin/aspirasi" className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">Lihat Semua →</Link>
+            <Link to="/admin/aspirasi" className="group inline-flex items-center gap-1 text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">
+              Lihat Semua
+              <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+            </Link>
           </div>
           <ul className="divide-y divide-neutral-100">
             {aspirasiTerbaru?.data?.results?.length === 0 && (
-              <li className="px-5 py-6 text-sm text-neutral-400 text-center">Belum ada aspirasi.</li>
+              <li className="px-5 py-10 text-sm text-neutral-400 text-center">Belum ada aspirasi.</li>
             )}
             {aspirasiTerbaru?.data?.results?.map((a) => (
               <li key={a.id} className="flex items-center gap-3 px-5 py-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-neutral-900 truncate">{a.pimpinan_label}</p>
-                  <p className="text-xs text-neutral-400">{a.perihal} · {formatShort(a.created_at)}</p>
+                  <p className="text-xs text-neutral-400 mt-0.5">{a.perihal} · {formatShort(a.created_at)}</p>
                 </div>
                 <Badge label={STATUS_ASPIRASI_LABELS[a.status] ?? a.status} colorClass={STATUS_ASPIRASI_COLORS[a.status]} />
               </li>
@@ -110,7 +116,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 p-4 bg-neutral-50 border border-neutral-200 rounded-card">
+      <div className="mt-6 p-5 bg-gradient-to-br from-neutral-50 to-white border border-neutral-200 rounded-card">
         <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">Aksi Cepat</p>
         <div className="flex flex-wrap gap-3">
           <Link to="/admin/berita" className="btn-primary text-sm py-2">+ Tulis Berita</Link>

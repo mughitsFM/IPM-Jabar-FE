@@ -4,12 +4,13 @@ import Button from "@/shared/components/ui/Button";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
 import { SkeletonTableRows } from "@/shared/components/ui/Skeleton";
-import Modal from "../components/Modal";
+import Modal from "@/shared/components/ui/Modal";
 import PimpinanTable from "../components/PimpinanTable";
-import FormBuatPimpinan from "../components/FormBuatPimpinan";
+import FormGenerateAkunPimpinan from "../components/FormGenerateAkunPimpinan";
 import FormEditPimpinan from "../components/FormEditPimpinan";
 import ModalOverrideKredensial from "../components/ModalOverrideKredensial";
-import { usePimpinanList, useCreatePimpinan, useUpdatePimpinan } from "../hooks/usePimpinanAdmin";
+import ModalHasilGenerateAkun from "../components/ModalHasilGenerateAkun";
+import { usePimpinanList, useGenerateAkunPimpinan, useUpdatePimpinan } from "../hooks/usePimpinanAdmin";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import { LEVEL_PIMPINAN_LABELS } from "@/shared/constants/statusEnum";
 
@@ -32,14 +33,16 @@ export default function AdminManajemenPimpinanPage() {
   const [search, setSearch]             = useState("");
   const [page, setPage]                 = useState(1);
 
-  const [formModal, setFormModal]                     = useState(null); // { mode: "create" | "edit", data? }
+  const [generateModalOpen, setGenerateModalOpen]     = useState(false);
+  const [hasilGenerate, setHasilGenerate]             = useState(null); // array akun hasil generate | null
+  const [editTarget, setEditTarget]                   = useState(null); // data pimpinan | null
   const [kredensialTarget, setKredensialTarget]       = useState(null);
   const [confirmToggleTarget, setConfirmToggleTarget] = useState(null);
   const [togglingId, setTogglingId]                   = useState(null);
 
-  const createMutation = useCreatePimpinan();
-  const updateMutation = useUpdatePimpinan(formModal?.data?.uid);
-  const toggleMutation = useUpdatePimpinan(confirmToggleTarget?.uid);
+  const generateMutation = useGenerateAkunPimpinan();
+  const updateMutation   = useUpdatePimpinan(editTarget?.uid);
+  const toggleMutation   = useUpdatePimpinan(confirmToggleTarget?.uid);
 
   const filteredList = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -52,7 +55,8 @@ export default function AdminManajemenPimpinanPage() {
         !(
           p.nama?.toLowerCase().includes(q) ||
           p.nama_wilayah?.toLowerCase().includes(q) ||
-          p.label_lengkap?.toLowerCase().includes(q)
+          p.label_lengkap?.toLowerCase().includes(q) ||
+          p.email?.toLowerCase().includes(q)
         )
       ) {
         return false;
@@ -64,13 +68,15 @@ export default function AdminManajemenPimpinanPage() {
   const totalPages = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE));
   const pagedList = filteredList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleSubmitForm = async (payload) => {
-    if (formModal.mode === "create") {
-      await createMutation.mutateAsync(payload);
-    } else {
-      await updateMutation.mutateAsync(payload);
-    }
-    setFormModal(null);
+  const handleGenerate = async (jumlah) => {
+    const res = await generateMutation.mutateAsync(jumlah);
+    setGenerateModalOpen(false);
+    setHasilGenerate(res?.data ?? []);
+  };
+
+  const handleSubmitEdit = async (payload) => {
+    await updateMutation.mutateAsync(payload);
+    setEditTarget(null);
   };
 
   const handleConfirmToggle = async () => {
@@ -86,7 +92,9 @@ export default function AdminManajemenPimpinanPage() {
   return (
     <AdminLayout title="Manajemen Pimpinan">
       <div className="mb-4 p-3 bg-brand-gold-50 border border-brand-gold-300 rounded-lg text-sm text-neutral-700">
-        Kelola akun Pimpinan Daerah, Cabang, dan Ranting yang mengakses Panel Pimpinan.
+        Kelola akun Pimpinan Daerah, Cabang, dan Ranting yang mengakses Panel Pimpinan. Nama, level,
+        dan wilayah akun baru diisi oleh pimpinan sendiri saat onboarding pertama — admin cukup
+        menentukan jumlah akun yang perlu dibuat.
       </div>
 
       {/* Filter bar */}
@@ -118,12 +126,12 @@ export default function AdminManajemenPimpinanPage() {
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Cari nama atau wilayah..."
+          placeholder="Cari nama, wilayah, atau email..."
           className="input-field flex-1"
         />
 
-        <Button onClick={() => setFormModal({ mode: "create" })} className="whitespace-nowrap">
-          + Tambah Akun Pimpinan
+        <Button onClick={() => setGenerateModalOpen(true)} className="whitespace-nowrap">
+          + Generate Akun Pimpinan
         </Button>
       </div>
 
@@ -133,12 +141,12 @@ export default function AdminManajemenPimpinanPage() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-200 bg-neutral-50">
-                  {["Nama", "Label Lengkap", "Email", "No. HP", "Status", "Aksi"].map((h) => (
+                  {["Nama", "Label Lengkap", "Email", "Kredensial", "No. HP", "Status", "Aksi"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-semibold text-neutral-700 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody><SkeletonTableRows rows={5} cols={6} /></tbody>
+              <tbody><SkeletonTableRows rows={5} cols={7} /></tbody>
             </table>
           </div>
           <div className="lg:hidden text-center text-sm text-neutral-500 py-10">Memuat data...</div>
@@ -154,7 +162,7 @@ export default function AdminManajemenPimpinanPage() {
       {!isLoading && !isError && filteredList.length === 0 && (
         <EmptyState
           title="Belum ada akun Pimpinan"
-          message="Klik '+ Tambah Akun Pimpinan' untuk membuat akun pertama."
+          message="Klik '+ Generate Akun Pimpinan' untuk membuat akun pertama."
         />
       )}
 
@@ -164,7 +172,7 @@ export default function AdminManajemenPimpinanPage() {
             list={pagedList}
             currentUserRole={currentUser?.role}
             togglingId={togglingId}
-            onEdit={(p) => setFormModal({ mode: "edit", data: p })}
+            onEdit={(p) => setEditTarget(p)}
             onToggleActive={(p) => setConfirmToggleTarget(p)}
             onOverrideKredensial={(p) => setKredensialTarget(p)}
           />
@@ -173,55 +181,79 @@ export default function AdminManajemenPimpinanPage() {
         </>
       )}
 
-      {formModal && (
-        <Modal
-          title={formModal.mode === "create" ? "Tambah Akun Pimpinan" : "Edit Akun Pimpinan"}
-          onClose={() => setFormModal(null)}
-        >
-          {formModal.mode === "create" ? (
-            <FormBuatPimpinan
-              onSubmit={handleSubmitForm}
-              onCancel={() => setFormModal(null)}
-              isSubmitting={createMutation.isPending}
-            />
-          ) : (
-            <FormEditPimpinan
-              initialData={formModal.data}
-              onSubmit={handleSubmitForm}
-              onCancel={() => setFormModal(null)}
-              isSubmitting={updateMutation.isPending}
-            />
-          )}
-          {(createMutation.isError || updateMutation.isError) && (
-            <p className="form-error mt-3 text-center">Gagal menyimpan data. Coba lagi.</p>
-          )}
-        </Modal>
-      )}
+      {/* Modal form: admin cuma isi jumlah akun yang mau digenerate */}
+      <Modal
+        open={generateModalOpen}
+        title="Generate Akun Pimpinan"
+        onClose={() => setGenerateModalOpen(false)}
+      >
+        <FormGenerateAkunPimpinan
+          onSubmit={handleGenerate}
+          onCancel={() => setGenerateModalOpen(false)}
+          isSubmitting={generateMutation.isPending}
+        />
+        {generateMutation.isError && (
+          <p className="form-error mt-3 text-center">Gagal generate akun. Coba lagi.</p>
+        )}
+      </Modal>
 
-      {confirmToggleTarget && (
-        <Modal
-          title={confirmToggleTarget.status_aktif ? "Nonaktifkan Akun?" : "Aktifkan Akun?"}
-          onClose={() => setConfirmToggleTarget(null)}
-        >
-          <p className="text-sm text-neutral-600 mb-6">
-            {confirmToggleTarget.status_aktif ? (
-              <>Akun <strong>{confirmToggleTarget.label_lengkap}</strong> tidak akan bisa login ke Panel Pimpinan selama dinonaktifkan.</>
-            ) : (
-              <>Akun <strong>{confirmToggleTarget.label_lengkap}</strong> akan bisa login kembali ke Panel Pimpinan.</>
-            )}
-          </p>
-          <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => setConfirmToggleTarget(null)}>Batal</Button>
-            <Button
-              variant={confirmToggleTarget.status_aktif ? "danger" : undefined}
-              loading={togglingId === confirmToggleTarget.uid}
-              onClick={handleConfirmToggle}
-            >
-              {confirmToggleTarget.status_aktif ? "Ya, Nonaktifkan" : "Ya, Aktifkan"}
-            </Button>
-          </div>
-        </Modal>
-      )}
+      {/* Modal hasil generate — tampil sekali, berisi email+password yang wajib dicatat admin */}
+      <Modal
+        open={!!hasilGenerate}
+        title="Akun Berhasil Digenerate"
+        onClose={() => setHasilGenerate(null)}
+      >
+        {hasilGenerate && (
+          <ModalHasilGenerateAkun akunList={hasilGenerate} onClose={() => setHasilGenerate(null)} />
+        )}
+      </Modal>
+
+      {/* Modal edit — koreksi manual oleh admin (nama/level/wilayah/no_hp/status), tidak menyentuh kredensial */}
+      <Modal
+        open={!!editTarget}
+        title="Edit Akun Pimpinan"
+        onClose={() => setEditTarget(null)}
+      >
+        {editTarget && (
+          <FormEditPimpinan
+            initialData={editTarget}
+            onSubmit={handleSubmitEdit}
+            onCancel={() => setEditTarget(null)}
+            isSubmitting={updateMutation.isPending}
+          />
+        )}
+        {updateMutation.isError && (
+          <p className="form-error mt-3 text-center">Gagal menyimpan data. Coba lagi.</p>
+        )}
+      </Modal>
+
+      <Modal
+        open={!!confirmToggleTarget}
+        title={confirmToggleTarget?.status_aktif ? "Nonaktifkan Akun?" : "Aktifkan Akun?"}
+        onClose={() => setConfirmToggleTarget(null)}
+      >
+        {confirmToggleTarget && (
+          <>
+            <p className="text-sm text-neutral-600 mb-6">
+              {confirmToggleTarget.status_aktif ? (
+                <>Akun <strong>{confirmToggleTarget.label_lengkap}</strong> tidak akan bisa login ke Panel Pimpinan selama dinonaktifkan.</>
+              ) : (
+                <>Akun <strong>{confirmToggleTarget.label_lengkap}</strong> akan bisa login kembali ke Panel Pimpinan.</>
+              )}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setConfirmToggleTarget(null)}>Batal</Button>
+              <Button
+                variant={confirmToggleTarget.status_aktif ? "danger" : undefined}
+                loading={togglingId === confirmToggleTarget.uid}
+                onClick={handleConfirmToggle}
+              >
+                {confirmToggleTarget.status_aktif ? "Ya, Nonaktifkan" : "Ya, Aktifkan"}
+              </Button>
+            </div>
+          </>
+        )}
+      </Modal>
 
       {kredensialTarget && (
         <ModalOverrideKredensial

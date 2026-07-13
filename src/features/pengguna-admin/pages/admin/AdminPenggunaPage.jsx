@@ -4,7 +4,8 @@ import AdminLayout from "@/shared/components/layout/AdminLayout";
 import Button from "@/shared/components/ui/Button";
 import Badge from "@/shared/components/ui/Badge";
 import EmptyState from "@/shared/components/ui/EmptyState";
-import { SkeletonTableRows } from "@/shared/components/ui/Skeleton";
+import Modal from "@/shared/components/ui/Modal";
+import { SkeletonTableRows, SkeletonLine } from "@/shared/components/ui/Skeleton";
 import {
   usePenggunaList,
   useCreatePengguna,
@@ -15,29 +16,6 @@ import { penggunaService } from "../../services/penggunaService";
 import { ROLES, ROLE_LABELS } from "@/shared/constants/roles";
 import { useAuthContext } from "@/app/providers/AuthProvider";
 import { useQueryClient } from "@tanstack/react-query";
-
-function Modal({ title, children, onClose }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-card shadow-xl p-6 w-full max-w-md">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-bold text-neutral-900 text-lg">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label="Tutup"
-            className="p-1 rounded hover:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-500"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 const DEFAULT_FORM = { nama: "", email: "", password: "", role: ROLES.EDITOR };
 
@@ -151,11 +129,23 @@ export default function AdminPenggunaPage() {
         Halaman ini hanya dapat diakses oleh <strong>Super Admin</strong>. Kelola akun editor dan admin di sini.
       </div>
 
-      <div className="flex justify-end mb-6">
-        <Button onClick={() => setFormModal({ mode: "create" })}>+ Tambah Admin</Button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <p className="text-sm text-neutral-500">
+          <span className="font-semibold text-neutral-700">{list.length}</span> akun admin terdaftar.
+        </p>
+        <Button onClick={() => setFormModal({ mode: "create" })} className="shrink-0">+ Tambah Admin</Button>
       </div>
 
-      <div className="bg-white rounded-card border border-neutral-200 overflow-x-auto">
+      {!isLoading && list.length === 0 && (
+        <div className="bg-white rounded-card border border-neutral-200">
+          <EmptyState title="Belum ada pengguna admin" message="Klik '+ Tambah Admin' untuk membuat akun pertama." />
+        </div>
+      )}
+
+      {(isLoading || list.length > 0) && (
+      <div className="bg-white rounded-card border border-neutral-200 overflow-hidden">
+        {/* ===== Tabel — desktop (md ke atas) ===== */}
+        <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50">
@@ -166,14 +156,6 @@ export default function AdminPenggunaPage() {
           </thead>
           <tbody>
             {isLoading && <SkeletonTableRows rows={5} cols={5} />}
-
-            {!isLoading && list.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-10">
-                  <EmptyState title="Belum ada pengguna admin" message="Klik '+ Tambah Admin' untuk membuat akun pertama." />
-                </td>
-              </tr>
-            )}
 
             {!isLoading && list.map((p) => {
               const isSelf       = p.uid === currentUser?.uid;
@@ -247,24 +229,86 @@ export default function AdminPenggunaPage() {
             })}
           </tbody>
         </table>
-      </div>
+        </div>
 
-      {formModal && (
-        <Modal title={formModal.mode === "create" ? "Tambah Admin Baru" : "Edit Admin"} onClose={() => setFormModal(null)}>
-          <PenggunaForm
-            initialData={formModal.data ?? null}
-            onSubmit={handleSubmit}
-            onCancel={() => setFormModal(null)}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
-          />
-          {(createMutation.isError || updateMutation.isError) && (
-            <p className="form-error mt-3 text-center">Gagal menyimpan data. Coba lagi.</p>
-          )}
-        </Modal>
+        {/* ===== Kartu — mobile & tablet kecil (di bawah md) ===== */}
+        <div className="md:hidden divide-y divide-neutral-100">
+          {isLoading && Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="p-4 space-y-2">
+              <SkeletonLine className="w-2/3" />
+              <SkeletonLine className="w-1/3" />
+            </div>
+          ))}
+          {!isLoading && list.map((p) => {
+            const isSelf = p.uid === currentUser?.uid;
+            const isToggling = togglingId === p.uid;
+            return (
+              <div key={p.uid} className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-brand-blue-500/10 flex items-center justify-center text-brand-blue-500 font-bold text-xs shrink-0">
+                      {p.nama?.charAt(0)?.toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-neutral-900 truncate">
+                        {p.nama} {isSelf && <span className="text-xs text-neutral-400 font-normal">(Anda)</span>}
+                      </p>
+                      <p className="text-xs text-neutral-500 truncate">{p.email}</p>
+                    </div>
+                  </div>
+                  <Badge
+                    label={p.status_aktif ? "Aktif" : "Nonaktif"}
+                    colorClass={p.status_aktif ? "bg-brand-green-50 text-brand-green-500" : "bg-neutral-200 text-neutral-500"}
+                    className="shrink-0"
+                  />
+                </div>
+                <Badge
+                  label={ROLE_LABELS[p.role] ?? p.role}
+                  colorClass={p.role === ROLES.SUPER_ADMIN ? "bg-brand-red-500/10 text-brand-red-500" : "bg-brand-blue-500/10 text-brand-blue-500"}
+                />
+                <div className="flex flex-wrap gap-1 mt-3 pt-3 border-t border-neutral-100">
+                  <button
+                    disabled={isSelf}
+                    onClick={() => setFormModal({ mode: "edit", data: p })}
+                    className="min-h-[36px] px-2.5 rounded-lg text-brand-blue-500 font-semibold text-xs hover:bg-brand-blue-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    disabled={isSelf || isToggling}
+                    onClick={() => handleToggleActive(p)}
+                    className="min-h-[36px] px-2.5 rounded-lg text-brand-gold-600 font-semibold text-xs hover:bg-brand-gold-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isToggling ? "…" : p.status_aktif ? "Nonaktifkan" : "Aktifkan"}
+                  </button>
+                  <button
+                    disabled={isSelf}
+                    onClick={() => setDeleteTarget(p.uid)}
+                    className="min-h-[36px] px-2.5 rounded-lg text-state-error font-semibold text-xs hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
       )}
 
-      {deleteTarget && (
-        <Modal title="Hapus Akun Admin?" onClose={() => setDeleteTarget(null)}>
+      <Modal open={!!formModal} onClose={() => setFormModal(null)} title={formModal?.mode === "create" ? "Tambah Admin Baru" : "Edit Admin"}>
+        <PenggunaForm
+          initialData={formModal?.data ?? null}
+          onSubmit={handleSubmit}
+          onCancel={() => setFormModal(null)}
+          isSubmitting={createMutation.isPending || updateMutation.isPending}
+        />
+        {(createMutation.isError || updateMutation.isError) && (
+          <p className="form-error mt-3 text-center">Gagal menyimpan data. Coba lagi.</p>
+        )}
+      </Modal>
+
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Hapus Akun Admin?" maxWidth="max-w-sm">
           <p className="text-sm text-neutral-600 mb-6">
             Akun yang dihapus tidak dapat dikembalikan. Admin tersebut tidak akan dapat login lagi.
           </p>
@@ -284,8 +328,7 @@ export default function AdminPenggunaPage() {
           {deleteMutation.isError && (
             <p className="form-error mt-3 text-center">Gagal menghapus akun. Coba lagi.</p>
           )}
-        </Modal>
-      )}
+      </Modal>
     </AdminLayout>
   );
 }

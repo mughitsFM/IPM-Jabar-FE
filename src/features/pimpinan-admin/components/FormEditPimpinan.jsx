@@ -2,11 +2,19 @@ import { useState } from "react";
 import Button from "@/shared/components/ui/Button";
 import { LEVEL_PIMPINAN_LABELS, composeLabelPimpinan } from "@/shared/constants/statusEnum";
 
+// Akun hasil generate yang belum onboarding punya nama/level/nama_wilayah = null.
+// Admin tetap boleh mengisi lebih dulu (mis. sambil menunggu pimpinan login),
+// makanya level di-default ke "daerah" (bukan biarkan undefined) supaya
+// <select> tetap controlled & konsisten dengan FormBuatPimpinan.
+const DEFAULT_LEVEL = "daerah";
+
 export default function FormEditPimpinan({ initialData, onSubmit, onCancel, isSubmitting }) {
+  const belumOnboarding = !initialData.level;
+
   const [form, setForm] = useState({
-    nama: initialData.nama,
-    level: initialData.level,
-    nama_wilayah: initialData.nama_wilayah,
+    nama: initialData.nama ?? "",
+    level: initialData.level ?? DEFAULT_LEVEL,
+    nama_wilayah: initialData.nama_wilayah ?? "",
     no_hp: initialData.no_hp ?? "",
     status_aktif: initialData.status_aktif,
   });
@@ -22,6 +30,14 @@ export default function FormEditPimpinan({ initialData, onSubmit, onCancel, isSu
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
+      {belumOnboarding && (
+        <div className="p-3 bg-brand-gold-50 border border-brand-gold-300 rounded-lg text-xs text-neutral-700">
+          Akun ini belum menyelesaikan onboarding — nama, level, dan wilayah masih kosong.
+          Anda boleh mengisinya lebih dulu di sini, tapi pimpinan tetap bisa
+          melengkapi/menggantinya sendiri saat login pertama.
+        </div>
+      )}
+
       <div>
         <label className="form-label">Email</label>
         <input
@@ -35,7 +51,11 @@ export default function FormEditPimpinan({ initialData, onSubmit, onCancel, isSu
 
       <div>
         <label className="form-label">Nama Penanggung Jawab <span className="text-state-error">*</span></label>
-        <input name="nama" type="text" required value={form.nama} onChange={handleChange} className="input-field" />
+        <input
+          name="nama" type="text" required value={form.nama} onChange={handleChange}
+          placeholder={belumOnboarding ? "Belum diisi pimpinan" : undefined}
+          className="input-field"
+        />
       </div>
 
       <div>
@@ -51,6 +71,7 @@ export default function FormEditPimpinan({ initialData, onSubmit, onCancel, isSu
         <label className="form-label">Nama Wilayah <span className="text-state-error">*</span></label>
         <input
           name="nama_wilayah" type="text" required value={form.nama_wilayah} onChange={handleChange}
+          placeholder={belumOnboarding ? 'mis. "Kabupaten Bandung"' : undefined}
           className="input-field"
         />
         {previewLabel && (

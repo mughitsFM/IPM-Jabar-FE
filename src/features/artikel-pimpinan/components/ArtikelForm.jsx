@@ -383,7 +383,7 @@ export default function ArtikelForm({ initialData = null, createMutation, update
       </div>
 
       {!isLocked ? (
-        <div className="sticky bottom-0 -mx-6 -mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-6 py-4">
+        <div className="sticky bottom-0 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 sm:px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <button type="button" onClick={onDone} className="text-sm text-neutral-500 hover:text-neutral-700 font-medium">
@@ -407,7 +407,7 @@ export default function ArtikelForm({ initialData = null, createMutation, update
           </div>
         </div>
       ) : (
-        <div className="sticky bottom-0 -mx-6 -mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-6 py-4">
+        <div className="sticky bottom-0 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 sm:px-6 py-4">
           <p className="text-sm text-neutral-500 text-center">
             {initialData.status === "diajukan"
               ? "Artikel sedang direview Wilayah dan tidak dapat diedit."

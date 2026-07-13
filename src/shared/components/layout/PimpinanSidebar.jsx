@@ -10,6 +10,11 @@ const IconGear = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
+const IconClose = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
 // ── Pengaturan Akun sudah TIDAK di sini lagi, pindah ke footer ─────────────
 const NAV_ITEMS = [
@@ -70,7 +75,7 @@ function NotificationBell() {
     <button
       type="button"
       aria-label="Notifikasi"
-      className="relative p-2 rounded-lg text-white/90 hover:bg-white/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+      className="relative p-2 rounded-lg text-white/85 hover:bg-white/15 hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
     >
       <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -94,16 +99,16 @@ export default function PimpinanSidebar({ onClose }) {
   return (
     <aside className="w-64 h-screen sticky top-0 bg-white border-r border-neutral-200 flex flex-col overflow-hidden">
       {/* Header sidebar — shrink-0 supaya tidak ikut "diperas" flexbox */}
-      <div className="px-5 py-5 border-b border-neutral-200 bg-brand-green-500 shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="relative px-5 py-5 border-b border-neutral-200 bg-gradient-to-br from-brand-green-500 to-brand-green-600 shrink-0">
+        <div className="flex items-center gap-2.5">
           {logoUrl ? (
             <img
               src={logoUrl}
               alt="Logo PW IPM Jawa Barat"
-              className="w-9 h-9 rounded-full object-cover shrink-0"
+              className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-white/25"
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-sm shrink-0">
+            <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm ring-2 ring-white/25 flex items-center justify-center text-white font-display font-bold text-sm shrink-0">
               IPM
             </div>
           )}
@@ -111,9 +116,19 @@ export default function PimpinanSidebar({ onClose }) {
             <p className="font-display font-bold text-white text-sm leading-tight truncate">
               {user?.label_lengkap ?? "Panel Pimpinan"}
             </p>
-            <p className="text-xs text-white/70">PW IPM Jawa Barat</p>
+            <p className="text-xs text-white/70 truncate">PW IPM Jawa Barat</p>
           </div>
           <NotificationBell />
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup menu"
+              className="shrink-0 -mr-1 w-9 h-9 flex items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <IconClose className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -125,22 +140,22 @@ export default function PimpinanSidebar({ onClose }) {
             to={to}
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 min-h-[44px]
+              `flex items-center gap-3 pl-2.5 pr-3 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 min-h-[44px] border-l-[3px]
               ${isActive
-                ? "bg-brand-green-500/10 text-brand-green-500"
-                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                ? "bg-brand-green-500/10 text-brand-green-500 border-brand-green-500"
+                : "border-transparent text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
               }`
             }
           >
-            {icon}
-            {label}
+            <span className="shrink-0">{icon}</span>
+            <span className="leading-snug">{label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* User info (dengan tombol Pengaturan Akun) + logout — shrink-0, selalu nempel di bawah */}
       <div className="px-4 py-4 border-t border-neutral-200 shrink-0">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 bg-neutral-50 rounded-xl p-2">
           {user?.foto_profil_url ? (
             <img
               src={user.foto_profil_url}
@@ -155,7 +170,7 @@ export default function PimpinanSidebar({ onClose }) {
 
           <div className="overflow-hidden flex-1">
             <p className="text-sm font-semibold text-neutral-900 truncate">{user?.nama ?? user?.email}</p>
-            <p className="text-xs text-neutral-400">{ROLE_LABELS[user?.role] ?? user?.role}</p>
+            <p className="text-xs text-neutral-400 truncate">{ROLE_LABELS[user?.role] ?? user?.role}</p>
           </div>
 
           <NavLink
@@ -164,10 +179,10 @@ export default function PimpinanSidebar({ onClose }) {
             aria-label="Pengaturan Akun"
             title="Pengaturan Akun"
             className={({ isActive }) =>
-              `shrink-0 w-11 h-11 flex items-center justify-center rounded-lg transition-colors duration-150
+              `shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors duration-150
               ${isActive
                 ? "bg-brand-green-500/10 text-brand-green-500"
-                : "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900"
+                : "text-neutral-400 hover:bg-white hover:text-neutral-900"
               }`
             }
           >

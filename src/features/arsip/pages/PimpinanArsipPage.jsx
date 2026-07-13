@@ -95,10 +95,17 @@ export default function PimpinanArsipPage() {
 
   return (
     <PimpinanLayout title="Arsip">
-      <div className="flex gap-2 mb-6">
+      <div className="mb-6">
+        {/* <h2 className="font-display font-bold text-neutral-900 text-lg sm:text-xl">Arsip</h2> */}
+        <p className="text-sm text-neutral-500 mt-1">
+          Riwayat surat dan artikel yang pernah dikirim/diajukan oleh Pimpinan Anda.
+        </p>
+      </div>
+
+      <div className="flex gap-2 flex-wrap mb-6">
         <button
           onClick={() => setTabUtama("surat")}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors min-h-[44px] ${
             tabUtama === "surat" ? "bg-brand-green-500 text-white" : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
           }`}
         >
@@ -106,7 +113,7 @@ export default function PimpinanArsipPage() {
         </button>
         <button
           onClick={() => setTabUtama("artikel")}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors min-h-[44px] ${
             tabUtama === "artikel" ? "bg-brand-green-500 text-white" : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
           }`}
         >
@@ -122,17 +129,19 @@ export default function PimpinanArsipPage() {
             <p className="text-sm text-neutral-500">
               {totalItems} surat ditemukan{filters.tipe !== "semua" ? ` (${filters.tipe})` : ""}.
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="outline"
                 loading={unduhState.zip}
                 onClick={() => handleUnduh("zip")}
+                className="flex-1 sm:flex-none"
               >
                 Unduh Semua (ZIP)
               </Button>
               <Button
                 loading={unduhState.excel}
                 onClick={() => handleUnduh("excel")}
+                className="flex-1 sm:flex-none"
               >
                 Unduh Rekap Excel
               </Button>
