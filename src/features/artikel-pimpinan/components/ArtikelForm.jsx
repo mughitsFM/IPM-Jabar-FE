@@ -1,5 +1,5 @@
-{/* frontend/features/artikel-pimpinan/components/ArtikelForm.jsx (lengkap) */}
-import { useState, useRef } from "react";
+{/* frontend/features/artikel-pimpinan/components/ArtikelForm.jsx (lengkap, FIXED) */}
+import { useState, useRef, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useQuery } from "@tanstack/react-query";
 import StarterKit from "@tiptap/starter-kit";
@@ -29,8 +29,22 @@ const DEFAULT_VALUES = {
   tags:      [],
 };
 
-// Status yang mengunci form jadi read-only (sedang di tangan Wilayah / sudah selesai)
-const LOCKED_STATUSES = ["diajukan", "disetujui"];
+// FIX (bug edit-setelah-publish): backend (artikel_pimpinan/services.py)
+// mengizinkan edit di SEMUA status lewat EDITABLE_STATUSES — termasuk
+// 'diajukan' dan 'disetujui'. update_draft() otomatis membalikkan status
+// 'disetujui' -> 'diajukan' saat diedit, sehingga alur "edit artikel yang
+// sudah tayang -> masuk antrean review lagi" murni ditangani backend.
+// Form ini TIDAK PERLU (dan tidak boleh) mengunci status apa pun — mengunci
+// di sini yang tadinya membuat pimpinan tidak pernah bisa mengedit artikel
+// yang sudah disetujui/diajukan sama sekali.
+const LOCKED_STATUSES = [];
+
+// Status yang BOLEH langsung dipanggilkan endpoint ajukan() terpisah.
+// Backend: AJUKAN_ALLOWED_STATUSES = {draft, revisi, ditolak}. Status lain
+// (diajukan/disetujui) sudah otomatis di-requeue oleh update_draft() saat
+// disimpan, jadi memanggil ajukan() lagi di status itu akan gagal walau
+// penyimpanannya sendiri sukses — lihat submitManual() di bawah.
+const STATUSES_PERLU_AJUKAN_EKSPLISIT = ["draft", "revisi", "ditolak"];
 
 function pickFormFields(data) {
   if (!data) return DEFAULT_VALUES;
@@ -48,7 +62,19 @@ export default function ArtikelForm({ initialData = null, createMutation, update
   const isLocked = initialData && LOCKED_STATUSES.includes(initialData.status);
 
   const [form, setForm] = useState(() => pickFormFields(initialData));
-  const [currentId, setCurrentId] = useState(initialData?.id ?? null);
+
+  // FIX (bug draft ganda): id artikel disimpan di ref, BUKAN state.
+  // Autosave dan tombol manual (submitManual) sama-sama membaca/menulis
+  // ref yang sama secara sinkron — tidak ada delay re-render seperti pada
+  // useState, jadi keduanya selalu tahu id terbaru pada saat itu juga.
+  const currentIdRef = useRef(initialData?.id ?? null);
+
+  // FIX (bug draft ganda): kalau autosave DAN tombol manual sama-sama
+  // mendapati belum ada id (artikel benar-benar baru), keduanya dulu akan
+  // sama-sama memanggil createMutation sendiri-sendiri -> 2 dokumen draft.
+  // creatingPromiseRef menyimpan promise create yang SEDANG berjalan supaya
+  // pemanggil kedua menunggu & reuse hasil yang sama, bukan create lagi.
+  const creatingPromiseRef = useRef(null);
 
   const [thumbFile, setThumbFile] = useState(null);
   const [thumbError, setThumbError] = useState(null);
@@ -166,25 +192,60 @@ export default function ArtikelForm({ initialData = null, createMutation, update
     thumbnailFile: thumbFile,
   });
 
-  // action: "draft" → simpan saja | "ajukan" → simpan lalu langsung ajukan
+  // FIX (bug draft ganda): satu pintu masuk tunggal untuk "pastikan
+  // tersimpan", dipakai baik oleh autosave maupun submitManual — supaya
+  // keduanya SELALU reuse id artikel yang sama, tidak pernah create dua kali.
+  const saveDraft = async (payload) => {
+    if (currentIdRef.current) {
+      const res = await updateMutation.mutateAsync({ id: currentIdRef.current, payload });
+      return res?.data;
+    }
+
+    // Sudah ada create() yang sedang berjalan (dipicu pemanggil lain,
+    // mis. autosave, tepat sebelum tombol manual ditekan) — tunggu itu
+    // selesai dan update dokumen yang SAMA, jangan create baru.
+    if (creatingPromiseRef.current) {
+      const created = await creatingPromiseRef.current;
+      const res = await updateMutation.mutateAsync({ id: created.id, payload });
+      return res?.data;
+    }
+
+    creatingPromiseRef.current = (async () => {
+      const res = await createMutation.mutateAsync(payload);
+      currentIdRef.current = res?.data?.id;
+      return res?.data;
+    })();
+
+    try {
+      return await creatingPromiseRef.current;
+    } finally {
+      creatingPromiseRef.current = null;
+    }
+  };
+
+  // action: "draft" → simpan saja | "ajukan" → simpan lalu ajukan (jika perlu)
   const submitManual = async (action) => {
     if (!validateCore()) return;
     setPendingAction(action);
     setErrorMsg(null);
     try {
       const payload = buildPayload();
-      let result;
-      if (currentId) {
-        result = await updateMutation.mutateAsync({ id: currentId, payload });
-      } else {
-        result = await createMutation.mutateAsync(payload);
-        setCurrentId(result?.data?.id);
-      }
+      const statusSebelumSimpan = initialData?.status ?? null;
 
-      if (action === "ajukan") {
-        const artikelId = currentId ?? result?.data?.id;
+      await saveDraft(payload);
+
+      // FIX (bug edit-setelah-publish): kalau statusnya sebelum disimpan
+      // adalah 'diajukan' atau 'disetujui', update_draft() di backend SUDAH
+      // otomatis meng-antrekannya untuk direview (disetujui -> diajukan).
+      // Memanggil ajukan() eksplisit di status itu akan gagal (backend hanya
+      // menerima draft/revisi/ditolak) meski penyimpanan sendiri sukses —
+      // jadi cukup skip, tidak perlu dianggap error ke user.
+      const perluAjukanEksplisit =
+        !statusSebelumSimpan || STATUSES_PERLU_AJUKAN_EKSPLISIT.includes(statusSebelumSimpan);
+
+      if (action === "ajukan" && perluAjukanEksplisit) {
         try {
-          await ajukanMutation.mutateAsync(artikelId);
+          await ajukanMutation.mutateAsync(currentIdRef.current);
         } catch (err) {
           setErrorMsg(err?.response?.data?.message ?? "Gagal mengajukan artikel. Draft sudah tersimpan.");
           setPendingAction(false);
@@ -213,8 +274,6 @@ export default function ArtikelForm({ initialData = null, createMutation, update
   const [autosaveStatus, setAutosaveStatus] = useState("idle"); // idle | saving | saved | error
   const [lastSavedAt, setLastSavedAt] = useState(null);
 
-  useState(() => {}); // no-op placeholder guard removed below via useEffect import pattern
-
   useDebounceAutosaveEffect({
     isLocked,
     finalizedRef,
@@ -222,16 +281,12 @@ export default function ArtikelForm({ initialData = null, createMutation, update
     lastSavedSnapshotRef,
     form,
     editor,
-    currentId,
-    setCurrentId,
+    saveDraft,
     setAutosaveStatus,
     setLastSavedAt,
     setThumbFile,
     setThumbPreview,
     thumbFile,
-    buildPayload,
-    createMutation,
-    updateMutation,
   });
 
   const plainText = editor?.getText() ?? "";
@@ -382,6 +437,11 @@ export default function ArtikelForm({ initialData = null, createMutation, update
         {fieldErrors.konten && <p className="form-error">{fieldErrors.konten}</p>}
       </div>
 
+      {/* FIX (bug edit-setelah-publish): LOCKED_STATUSES sekarang selalu
+          kosong, jadi cabang !isLocked ini selalu dipakai — pimpinan selalu
+          bisa mengedit & mengirim ulang, termasuk untuk artikel yang sudah
+          tayang. Cabang else di bawah (pesan read-only lama) sengaja
+          dibiarkan sebagai fallback kalau LOCKED_STATUSES diisi lagi nanti. */}
       {!isLocked ? (
         <div className="sticky bottom-0 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 sm:px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -401,10 +461,20 @@ export default function ArtikelForm({ initialData = null, createMutation, update
                 {initialData ? "Simpan Perubahan" : "Simpan sebagai Draft"}
               </Button>
               <Button type="button" loading={pendingAction === "ajukan"} onClick={() => submitManual("ajukan")}>
-                Ajukan ke Wilayah
+                {initialData?.status === "disetujui" ? "Simpan & Ajukan Ulang" : "Ajukan ke Wilayah"}
               </Button>
             </div>
           </div>
+
+          {/* FIX (bug edit-setelah-publish): beri konteks eksplisit bahwa
+              mengedit artikel yang sudah tayang tidak langsung mengubah
+              versi publik — supaya tidak dikira bug lagi oleh pimpinan. */}
+          {initialData?.status === "disetujui" && (
+            <p className="text-xs text-neutral-400 mt-2">
+              Artikel ini sudah tayang. Menyimpan perubahan akan mengembalikannya ke antrean review Wilayah —
+              versi yang tampil ke publik tidak berubah sampai admin menyetujui ulang.
+            </p>
+          )}
         </div>
       ) : (
         <div className="sticky bottom-0 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 mt-8 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 sm:px-6 py-4">
@@ -423,12 +493,14 @@ export default function ArtikelForm({ initialData = null, createMutation, update
 // Dipisah jadi fungsi tersendiri di bawah komponen (bukan inline) supaya
 // badan ArtikelForm tidak makin panjang — tetap "hook" biasa (dipanggil di
 // urutan tetap, tanpa kondisi), hanya diekstrak untuk keterbacaan.
-import { useEffect } from "react";
-
+//
+// FIX (bug draft ganda): sekarang menerima `saveDraft` (bukan mengelola
+// createMutation/updateMutation/currentId sendiri) — satu jalur simpan yang
+// sama persis dipakai submitManual, jadi autosave & tombol manual tidak
+// pernah lagi bisa saling membuat draft terpisah.
 function useDebounceAutosaveEffect({
   isLocked, finalizedRef, debouncedSnapshot, lastSavedSnapshotRef, form, editor,
-  currentId, setCurrentId, setAutosaveStatus, setLastSavedAt,
-  setThumbFile, setThumbPreview, thumbFile, buildPayload, createMutation, updateMutation,
+  saveDraft, setAutosaveStatus, setLastSavedAt, setThumbFile, setThumbPreview, thumbFile,
 }) {
   useEffect(() => {
     if (isLocked) return;
@@ -441,17 +513,15 @@ function useDebounceAutosaveEffect({
     (async () => {
       setAutosaveStatus("saving");
       try {
-        const payload = buildPayload();
-        let result;
-        if (currentId) {
-          result = await updateMutation.mutateAsync({ id: currentId, payload });
-        } else {
-          result = await createMutation.mutateAsync(payload);
-          if (!cancelled) setCurrentId(result?.data?.id);
-        }
+        const payload = {
+          judul: form.judul, slug: form.slug, ringkasan: form.ringkasan,
+          kategori: form.kategori, konten: editor?.getHTML() ?? form.konten,
+          tags: form.tags, thumbnailFile: thumbFile,
+        };
+        const result = await saveDraft(payload);
         if (cancelled || finalizedRef.current) return;
-        if (thumbFile && result?.data?.thumbnail_url) {
-          setThumbPreview(result.data.thumbnail_url);
+        if (thumbFile && result?.thumbnail_url) {
+          setThumbPreview(result.thumbnail_url);
           setThumbFile(null);
         }
         lastSavedSnapshotRef.current = debouncedSnapshot;

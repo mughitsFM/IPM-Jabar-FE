@@ -14,7 +14,7 @@
  * @param {string} title
  * @param {string} [maxWidth] - lebar maksimum di desktop, mis. "sm:max-w-lg"
  */
-export default function BottomSheetModal({ open, onClose, title, subtitle, maxWidth = "sm:max-w-lg", children }) {
+export default function BottomSheetModal({ open, onClose, title, subtitle, maxWidth = "sm:max-w-lg", footer, children }) {
   if (!open) return null;
 
   return (
@@ -36,6 +36,11 @@ export default function BottomSheetModal({ open, onClose, title, subtitle, maxWi
           </button>
         </div>
         <div className="px-5 py-4 overflow-y-auto">{children}</div>
+        {footer && (
+          <div className="px-5 py-4 border-t border-neutral-100 bg-neutral-50 shrink-0 rounded-b-2xl sm:rounded-b-card">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

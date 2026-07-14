@@ -1,5 +1,5 @@
 {/* frontend/features/artikel-pimpinan/pages/PimpinanArtikelListPage.jsx (lengkap) */}
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PimpinanLayout from "@/shared/components/layout/PimpinanLayout";
 import Button from "@/shared/components/ui/Button";
@@ -7,6 +7,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
 import { SkeletonTableRows, SkeletonLine } from "@/shared/components/ui/Skeleton";
 import { formatShort } from "@/shared/utils/formatDate";
+import { useTandaiNotifikasiEntitas } from "@/features/notifikasi/hooks/useNotifikasi";
 import ArtikelStatusBadge from "../components/ArtikelStatusBadge";
 import {
   useArtikelPimpinanList,
@@ -24,9 +25,15 @@ const TABS = [
   { value: "disetujui", label: "Disetujui" },
 ];
 
+// Tipe notif yg outcome-nya sudah langsung terlihat di baris list ini —
+// tidak ada halaman detail terpisah untuk sekadar melihat status/catatan
+// revisi, jadi list INI-lah titik "user langsung cek" hasil review Wilayah.
+const TIPE_NOTIF_STATUS = { disetujui: "artikel_disetujui", revisi: "artikel_revisi", ditolak: "artikel_ditolak" };
+
 export default function PimpinanArtikelListPage() {
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
+  const tandaiNotif = useTandaiNotifikasiEntitas();
 
   const { data, isLoading } = useArtikelPimpinanList({ page, limit: 10, status: status || undefined });
   const ajukan = useAjukanArtikelPimpinan();
@@ -36,13 +43,30 @@ export default function PimpinanArtikelListPage() {
   const results = data?.data?.results ?? [];
   const meta = data?.data?.meta;
 
+  // Tandai terbaca semua notif hasil-review yang statusnya sudah kelihatan
+  // di baris-baris yang sedang dirender — supaya badge lonceng ikut update
+  // walau pimpinan tidak pernah buka dropdown notifikasi & langsung cek di
+  // halaman ini.
+  const kunciStatusHasil = results
+    .filter((a) => TIPE_NOTIF_STATUS[a.status])
+    .map((a) => `${a.id}:${a.status}`)
+    .join(",");
+  useEffect(() => {
+    const items = results
+      .filter((a) => TIPE_NOTIF_STATUS[a.status])
+      .map((a) => ({ tipe: TIPE_NOTIF_STATUS[a.status], entity_id: a.id }));
+    if (items.length > 0) {
+      tandaiNotif.mutate(items);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kunciStatusHasil]);
+
   const aksiHandlers = { ajukan, tarik, hapus };
 
   return (
     <PimpinanLayout title="Artikel & Berita">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          {/* <h2 className="font-display font-bold text-neutral-900 text-lg sm:text-xl">Artikel Saya</h2> */}
           <p className="text-sm text-neutral-500 mt-1">
             Ajukan artikel kegiatan atau informasi untuk direview & dipublikasikan Wilayah.
           </p>
@@ -101,7 +125,14 @@ export default function PimpinanArtikelListPage() {
                       )}
                     </td>
                     <td className="px-5 py-3 text-neutral-500 capitalize">{a.kategori?.replace("_", " ")}</td>
-                    <td className="px-5 py-3"><ArtikelStatusBadge status={a.status} /></td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <ArtikelStatusBadge status={a.status} />
+                        {a.status === "disetujui" && a.berita_status === "dinonaktifkan" && (
+                          <span className="text-xs text-state-error font-semibold">(nonaktif)</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-5 py-3 text-neutral-400 whitespace-nowrap">{formatShort(a.updated_at)}</td>
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-3 flex-wrap">
@@ -126,7 +157,12 @@ export default function PimpinanArtikelListPage() {
               <div key={a.id} className="p-4">
                 <div className="flex items-start justify-between gap-3 mb-1.5">
                   <p className="text-sm font-medium text-neutral-900 min-w-0">{a.judul}</p>
-                  <ArtikelStatusBadge status={a.status} className="shrink-0" />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <ArtikelStatusBadge status={a.status} />
+                    {a.status === "disetujui" && a.berita_status === "dinonaktifkan" && (
+                      <span className="text-xs text-state-error font-semibold">(nonaktif)</span>
+                    )}
+                  </div>
                 </div>
                 {["revisi", "ditolak"].includes(a.status) && a.catatan_revisi && (
                   <p className="text-xs text-neutral-400 line-clamp-2 mb-1">Catatan: {a.catatan_revisi}</p>
@@ -155,28 +191,31 @@ export default function PimpinanArtikelListPage() {
 /** Tombol aksi per baris/kartu — sama untuk versi tabel & kartu, diekstrak
  * supaya logika status tidak dobel-tulis. */
 function AksiArtikel({ artikel: a, ajukan, tarik, hapus }) {
+  // Poin 1: Pimpinan berhak edit artikel yang sedang direview ATAU sudah
+  // dipublikasikan, tidak hanya draft/revisi/ditolak seperti sebelumnya.
+  const bisaEdit = ["draft", "revisi", "ditolak", "diajukan", "disetujui"].includes(a.status);
+
   return (
     <>
-      {["draft", "revisi", "ditolak"].includes(a.status) && (
-        <>
-          <Link to={`/pimpinan/artikel/${a.id}`} className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">
-            {["revisi", "ditolak"].includes(a.status) ? "Perbaiki" : "Edit"}
-          </Link>
-          {a.status === "draft" && (
-            <button
-              onClick={() => ajukan.mutate(a.id)}
-              disabled={ajukan.isPending}
-              className="text-xs text-brand-green-500 hover:text-brand-green-600 font-semibold"
-            >
-              Ajukan
-            </button>
-          )}
-        </>
+      {bisaEdit && (
+        <Link to={`/pimpinan/artikel/${a.id}`} className="text-xs text-brand-blue-500 hover:text-brand-blue-600 font-semibold">
+          {["revisi", "ditolak"].includes(a.status) ? "Perbaiki" : "Edit"}
+        </Link>
+      )}
+      {a.status === "draft" && (
+        <button
+          onClick={() => ajukan.mutate(a.id)}
+          disabled={ajukan.isPending}
+          className="text-xs text-brand-green-500 hover:text-brand-green-600 font-semibold"
+        >
+          Ajukan
+        </button>
       )}
       {a.status === "draft" && (
         <button
           onClick={() => { if (confirm("Hapus draft ini?")) hapus.mutate(a.id); }}
-          className="text-xs text-state-error hover:opacity-75 font-semibold"
+          disabled={hapus.isPending}
+          className="text-xs text-state-error hover:opacity-75 font-semibold disabled:opacity-50"
         >
           Hapus
         </button>
@@ -184,13 +223,18 @@ function AksiArtikel({ artikel: a, ajukan, tarik, hapus }) {
       {a.status === "diajukan" && (
         <button
           onClick={() => { if (confirm("Tarik kembali pengajuan ini?")) tarik.mutate(a.id); }}
-          className="text-xs text-neutral-500 hover:text-neutral-700 font-semibold"
+          disabled={tarik.isPending}
+          className="text-xs text-neutral-500 hover:text-neutral-700 font-semibold disabled:opacity-50"
         >
           Tarik
         </button>
       )}
       {a.status === "disetujui" && (
-        <span className="text-xs text-neutral-400 italic">Sudah dipublikasikan</span>
+        a.berita_status === "dinonaktifkan" ? (
+          <span className="text-xs text-state-error italic">Publikasi dinonaktifkan Wilayah</span>
+        ) : (
+          <span className="text-xs text-neutral-400 italic">Sudah dipublikasikan</span>
+        )
       )}
     </>
   );

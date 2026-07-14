@@ -5,6 +5,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
 import { SkeletonTableRows, SkeletonLine } from "@/shared/components/ui/Skeleton";
 import { formatShort } from "@/shared/utils/formatDate";
+import { useTandaiNotifikasiEntitas } from "@/features/notifikasi/hooks/useNotifikasi";
 import AspirasiForm from "../../components/AspirasiForm";
 import AspirasiStatusBadge from "../../components/AspirasiStatusBadge";
 import { useAspirasiList } from "../../hooks/useAspirasi";
@@ -13,10 +14,24 @@ export default function PimpinanAspirasiPage() {
   const [showForm, setShowForm] = useState(false);
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState(null);
+  const tandaiNotif = useTandaiNotifikasiEntitas();
 
   const { data, isLoading } = useAspirasiList({ page, limit: 10 });
   const results = data?.data?.results ?? [];
   const meta = data?.data?.meta;
+
+  // Aspirasi di halaman ini tidak punya halaman detail terpisah — akordeon
+  // expand INI-lah momen "user langsung cek" hasil balasan Wilayah. Tandai
+  // notifikasi "aspirasi_dibalas" terbaca saat item yang sudah dibalas
+  // dibuka, supaya badge lonceng ikut update walau dropdown tidak pernah
+  // dibuka.
+  const handleToggleExpand = (a) => {
+    const sedangMembuka = expandedId !== a.id;
+    setExpandedId(sedangMembuka ? a.id : null);
+    if (sedangMembuka && a.status === "dibalas") {
+      tandaiNotif.mutate([{ tipe: "aspirasi_dibalas", entity_id: a.id }]);
+    }
+  };
 
   return (
     <PimpinanLayout title="Aspirasi ke Wilayah">
@@ -68,7 +83,7 @@ export default function PimpinanAspirasiPage() {
                   <Fragment key={a.id}>
                     <tr
                       className="cursor-pointer hover:bg-neutral-50"
-                      onClick={() => setExpandedId(expandedId === a.id ? null : a.id)}
+                      onClick={() => handleToggleExpand(a)}
                     >
                       <td className="px-5 py-3 font-medium text-neutral-900">{a.perihal}</td>
                       <td className="px-5 py-3"><AspirasiStatusBadge status={a.status} /></td>
@@ -98,7 +113,7 @@ export default function PimpinanAspirasiPage() {
             {!isLoading && results.map((a) => (
               <div key={a.id}>
                 <button
-                  onClick={() => setExpandedId(expandedId === a.id ? null : a.id)}
+                  onClick={() => handleToggleExpand(a)}
                   className="w-full text-left p-4 transition-colors active:bg-neutral-50"
                 >
                   <div className="flex items-start justify-between gap-3 mb-1.5">

@@ -26,6 +26,9 @@ export default function NewsDetail({ data }) {
     tags,
     published_at,
     user_nama,
+    sumber,
+    pimpinan_nama,
+    pimpinan_label,
     baca_juga_items,
   } = data;
 
@@ -36,6 +39,15 @@ export default function NewsDetail({ data }) {
   }, [konten]);
 
   const hasExtras = (tags?.length > 0) || (baca_juga_items?.length > 0);
+
+  // Nama penulis:
+  // - sumber "admin" -> selalu tampilkan "PW IPM Jawa Barat" (bukan nama akun admin)
+  // - sumber "pimpinan" -> pakai pimpinan_nama, fallback ke user_nama kalau kosong
+  const penulisNama =
+    sumber === "admin" ? "PW IPM Jawa Barat" : pimpinan_nama || user_nama;
+
+  // Label/jabatan hanya relevan untuk berita dari pimpinan
+  const penulisLabel = sumber === "admin" ? "PW IPM Jawa Barat" : pimpinan_label;
 
   return (
     <article className="max-w-3xl mx-auto">
@@ -66,7 +78,11 @@ export default function NewsDetail({ data }) {
         {published_at && (
           <time dateTime={published_at}>{formatDateTime(published_at)}</time>
         )}
-        {user_nama && <span>Oleh: <span className="font-semibold text-neutral-700">{user_nama}</span></span>}
+        {penulisNama && (
+          <span>
+            Oleh: {penulisLabel && <span className="text-neutral-400"> · {penulisLabel}</span>}
+          </span>
+        )}
       </div>
 
       {/* Thumbnail */}

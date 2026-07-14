@@ -65,26 +65,6 @@ const NAV_ITEMS = [
   },
 ];
 
-/**
- * Placeholder lonceng notifikasi — implementasi penuh (fetch unread count,
- * dropdown daftar notifikasi) ada di 10-notifikasi.md. Untuk saat ini hanya
- * slot ikon statis supaya tata letak header sudah final lebih awal.
- */
-function NotificationBell() {
-  return (
-    <button
-      type="button"
-      aria-label="Notifikasi"
-      className="relative p-2 rounded-lg text-white/85 hover:bg-white/15 hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-      </svg>
-      {/* TODO(file 10): badge angka unread ditambahkan di sini */}
-    </button>
-  );
-}
-
 export default function PimpinanSidebar({ onClose }) {
   const { user }   = useAuthContext();
   const navigate   = useNavigate();
@@ -105,7 +85,7 @@ export default function PimpinanSidebar({ onClose }) {
             <img
               src={logoUrl}
               alt="Logo PW IPM Jawa Barat"
-              className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-white/25"
+              className="w-9 h-9 object-cover shrink-0"
             />
           ) : (
             <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm ring-2 ring-white/25 flex items-center justify-center text-white font-display font-bold text-sm shrink-0">
@@ -118,7 +98,6 @@ export default function PimpinanSidebar({ onClose }) {
             </p>
             <p className="text-xs text-white/70 truncate">PW IPM Jawa Barat</p>
           </div>
-          <NotificationBell />
           {onClose && (
             <button
               type="button"

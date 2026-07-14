@@ -8,6 +8,7 @@ const TIPE_ICON = {
   artikel_disetujui: DocumentIcon,
   artikel_revisi: DocumentIcon,
   artikel_ditolak: DocumentIcon,
+  artikel_diajukan: DocumentIcon,
   surat_masuk: MailIcon,
   aspirasi_masuk: ChatIcon,
   aspirasi_dibalas: ChatIcon,
@@ -65,7 +66,6 @@ export default function NotificationDropdown({ onClose }) {
       await tandaiDibaca.mutateAsync(item.id);
     }
     onClose?.();
-    console.warn(`menuju link ${item.link}`);
     navigate(item.link);
   };
 

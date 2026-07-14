@@ -51,7 +51,7 @@ export default function Navbar() {
               <img
                 src={logoUrl}
                 alt="Logo PW IPM Jawa Barat"
-                className="w-9 h-9 rounded-full object-cover shrink-0"
+                className="w-9 h-9 object-cover shrink-0"
               />
             ) : (
               <div className="w-9 h-9 rounded-full bg-brand-gold-500 flex items-center justify-center text-brand-green-900 font-bold text-sm shrink-0">

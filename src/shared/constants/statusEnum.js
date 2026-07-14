@@ -22,13 +22,11 @@ export const STATUS_BERITA_COLORS = {
 export const KATEGORI_BERITA = {
   KEGIATAN:    "kegiatan",
   UMUM:        "umum",
-  SURAT_RESMI: "surat_resmi",
 };
 
 export const KATEGORI_BERITA_LABELS = {
   [KATEGORI_BERITA.KEGIATAN]:    "Informasi Kegiatan",
   [KATEGORI_BERITA.UMUM]:        "Informasi Umum",
-  [KATEGORI_BERITA.SURAT_RESMI]: "Sebaran Surat Resmi",
 };
 
 // ── Status Program Kerja ───────────────────────────────────────────────────

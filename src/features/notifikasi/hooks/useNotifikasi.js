@@ -31,3 +31,17 @@ export function useTandaiSemuaDibaca() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifikasi"] }),
   });
 }
+
+// Dipanggil dari halaman/komponen surat, aspirasi, & artikel-pimpinan saat
+// user membuka entitas terkait secara langsung (modal detail, baris list
+// yang sudah menampilkan status) — supaya notifikasi ikut ter-mark terbaca
+// walau user tidak pernah membuka dropdown lonceng notifikasi. Silent-fail
+// dibiarkan (tanpa onError) karena ini efek samping non-kritis; kegagalannya
+// tidak boleh mengganggu alur utama halaman yang memanggilnya.
+export function useTandaiNotifikasiEntitas() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: notifikasiService.tandaiEntitas,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifikasi"] }),
+  });
+}

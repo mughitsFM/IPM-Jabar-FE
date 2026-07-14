@@ -1,8 +1,9 @@
 {/* frontend/features/aspirasi/components/BalasAspirasiModal.jsx (lengkap) */}
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/shared/components/ui/Button";
 import BottomSheetModal from "@/shared/components/ui/BottomSheetModal";
 import { formatShort } from "@/shared/utils/formatDate";
+import { useTandaiNotifikasiEntitas } from "@/features/notifikasi/hooks/useNotifikasi";
 import { useBalasAspirasi, useUpdateStatusAspirasi } from "../hooks/useAspirasi";
 import AspirasiStatusBadge from "./AspirasiStatusBadge";
 
@@ -10,6 +11,18 @@ export default function BalasAspirasiModal({ aspirasi, onClose }) {
   const [balasan, setBalasan] = useState(aspirasi.balasan ?? "");
   const balasMutation = useBalasAspirasi();
   const statusMutation = useUpdateStatusAspirasi();
+  const tandaiNotif = useTandaiNotifikasiEntitas();
+
+  // Modal ini dibuka lewat klik "Balas"/"Lihat" di AdminAspirasiPage TANPA
+  // fetch detail terpisah (data sudah ada dari list) — jadi ini titik yang
+  // tepat untuk tandai notifikasi "aspirasi_masuk" terbaca, supaya badge
+  // lonceng ikut update walau admin tidak pernah buka dropdown notifikasi.
+  useEffect(() => {
+    if (aspirasi?.id) {
+      tandaiNotif.mutate([{ tipe: "aspirasi_masuk", entity_id: aspirasi.id }]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aspirasi?.id]);
 
   const sudahDibalas = aspirasi.status === "dibalas";
 

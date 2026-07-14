@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PimpinanSidebar from "./PimpinanSidebar";
+import NotificationBell from "@/features/notifikasi/components/NotificationBell";
 
 /**
  * Layout untuk halaman Pimpinan — sidebar di kiri, konten di kanan.
@@ -7,6 +8,10 @@ import PimpinanSidebar from "./PimpinanSidebar";
  * AdminLayout.jsx karena sudah proven & responsive — lihat
  * 02-login-dan-layout-pimpinan.md §7. Dipakai persis seperti AdminLayout:
  * <PimpinanLayout title="Dashboard">...</PimpinanLayout>
+ *
+ * NotificationBell dipindah kesini (bukan di PimpinanSidebar) supaya
+ * strukturnya sama persis dengan AdminLayout — sebelumnya sidebar hanya
+ * punya placeholder ikon statis, tidak benar-benar terhubung ke data.
  */
 export default function PimpinanLayout({ children, title }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,18 +55,22 @@ export default function PimpinanLayout({ children, title }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          {title && (
-            <h1 className="font-display font-bold text-neutral-900 text-base truncate">{title}</h1>
-          )}
+          <div className="flex-1 min-w-0">
+            {title && (
+              <h1 className="font-display font-bold text-neutral-900 text-base truncate">{title}</h1>
+            )}
+          </div>
+          <NotificationBell />
         </header>
 
         {/* Konten halaman */}
         <main className="flex-1 p-4 lg:p-8">
-          {title && (
-            <h1 className="hidden lg:block font-display font-bold text-neutral-900 text-2xl pb-5 mb-6 border-b border-neutral-200">
-              {title}
-            </h1>
-          )}
+          <div className="hidden lg:flex items-center justify-between pb-5 mb-6 border-b border-neutral-200">
+            {title ? (
+              <h1 className="font-display font-bold text-neutral-900 text-2xl">{title}</h1>
+            ) : <div />}
+            <NotificationBell />
+          </div>
           {children}
         </main>
       </div>

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import PublicLayout from "@/shared/components/layout/PublicLayout";
 import NewsCard from "@/features/berita/components/NewsCard";
@@ -35,73 +36,129 @@ function ArrowIcon({ className = "w-4 h-4" }) {
   );
 }
 
-// ── Section: Hero ────────────────────────────────────────────────────────────
+// ── Section: Hero (carousel 1-5 slide) ───────────────────────────────────────
+// 14-hero-carousel-beranda.md: badge_text & stats tetap global (dari
+// useDesainSection biasa). Yang berubah per slide cuma gambar/headline/
+// subheadline/2 CTA. Kalau hero_slides cuma 1 item, tampil statis persis
+// seperti sebelumnya (gak ada tombol navigasi/dots yang dirender).
+const AUTOPLAY_INTERVAL_MS = 6000;
+
+// Motif jaringan dekoratif dipakai berulang (tiap slide tanpa gambar) — jadi
+// diekstrak biar gak duplikasi markup SVG-nya.
+function HeroNetworkMotif() {
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full"
+      viewBox="0 0 800 400"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <g stroke="currentColor" className="text-white" strokeOpacity="0.25" strokeWidth="1">
+        <line x1="640" y1="130" x2="560" y2="70" />
+        <line x1="640" y1="130" x2="720" y2="80" />
+        <line x1="640" y1="130" x2="760" y2="180" />
+        <line x1="640" y1="130" x2="700" y2="230" />
+        <line x1="640" y1="130" x2="600" y2="220" />
+        <line x1="640" y1="130" x2="680" y2="40" />
+        <line x1="140" y1="320" x2="60" y2="280" />
+        <line x1="140" y1="320" x2="90" y2="370" />
+        <line x1="140" y1="320" x2="200" y2="350" />
+        <line x1="140" y1="320" x2="170" y2="260" />
+        <line x1="640" y1="130" x2="140" y2="320" strokeOpacity="0.12" />
+      </g>
+      <g className="text-white" fill="currentColor" fillOpacity="0.35">
+        <circle cx="560" cy="70" r="3" />
+        <circle cx="720" cy="80" r="3" />
+        <circle cx="760" cy="180" r="3" />
+        <circle cx="700" cy="230" r="3" />
+        <circle cx="600" cy="220" r="3" />
+        <circle cx="680" cy="40" r="3" />
+        <circle cx="60" cy="280" r="3" />
+        <circle cx="90" cy="370" r="3" />
+        <circle cx="200" cy="350" r="3" />
+        <circle cx="170" cy="260" r="3" />
+      </g>
+      <g className="text-brand-gold-300" fill="currentColor">
+        <circle cx="640" cy="130" r="6" />
+        <circle cx="140" cy="320" r="5" />
+      </g>
+    </svg>
+  );
+}
+
+const FALLBACK_SLIDE = {
+  image_url: null,
+  headline: "Bergerak Bersama untuk Pelajar Jawa Barat",
+  subheadline:
+    "PW IPM Jawa Barat hadir sebagai wadah perjuangan, kaderisasi, dan kontribusi nyata pelajar Muhammadiyah se-Jawa Barat.",
+  cta_1: { label: "Kenal Kami", href: "/profil" },
+  cta_2: { label: "Lihat Berita Terbaru", href: "/berita" },
+};
+
 function HeroSection() {
   const { section } = useDesainSection("beranda");
 
-  const heroImageUrl = section?.hero_image_url;
   const badgeText = section?.badge_text || "Pimpinan Wilayah Ikatan Pelajar Muhammadiyah";
-  const headline = section?.headline || "Bergerak Bersama untuk Pelajar Jawa Barat";
-  const subheadline = section?.subheadline ||
-    "PW IPM Jawa Barat hadir sebagai wadah perjuangan, kaderisasi, dan kontribusi nyata pelajar Muhammadiyah se-Jawa Barat.";
-  const cta1 = section?.cta_1;
-  const cta2 = section?.cta_2;
+  const slides = section?.hero_slides?.length ? section.hero_slides : [FALLBACK_SLIDE];
+  const isCarousel = slides.length > 1;
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const intervalRef = useRef(null);
+
+  // Kalau admin ngurangin jumlah slide sementara activeIdx udah lebih besar
+  // dari slide yang tersisa, balikin ke slide pertama biar gak out-of-bounds.
+  useEffect(() => {
+    setActiveIdx((i) => (i >= slides.length ? 0 : i));
+  }, [slides.length]);
+
+  // Autoplay — timer di-restart tiap activeIdx berubah, termasuk pas ganti
+  // manual (prev/next/dot), jadi hitungan 6 detik "reset" otomatis kalau
+  // user baru aja interaksi.
+  useEffect(() => {
+    if (!isCarousel) return undefined;
+    intervalRef.current = setInterval(() => {
+      setActiveIdx((i) => (i + 1) % slides.length);
+    }, AUTOPLAY_INTERVAL_MS);
+    return () => clearInterval(intervalRef.current);
+  }, [isCarousel, slides.length, activeIdx]);
+
+  const goPrev = () => setActiveIdx((i) => (i - 1 + slides.length) % slides.length);
+  const goNext = () => setActiveIdx((i) => (i + 1) % slides.length);
+  const goTo = (idx) => setActiveIdx(idx);
+
+  const slide = slides[activeIdx] ?? slides[0];
+  const headline = slide?.headline || FALLBACK_SLIDE.headline;
+  const subheadline = slide?.subheadline || FALLBACK_SLIDE.subheadline;
+  const cta1 = slide?.cta_1;
+  const cta2 = slide?.cta_2;
 
   return (
     <section className="relative bg-brand-green-500 overflow-hidden">
-      {heroImageUrl ? (
-        <>
-          <img
-            src={heroImageUrl}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          {/* Overlay gelap supaya teks putih tetap terbaca di atas foto apa pun */}
-          <div className="absolute inset-0 bg-brand-green-900/70" />
-        </>
-      ) : (
-        // Motif jaringan dekoratif — tampil kalau admin belum unggah gambar hero.
-        // Dua simpul (hub) emas melambangkan PW sebagai pusat koordinasi,
-        // terhubung ke simpul-simpul putih (PC/PR) di sekitarnya. Motif ini
-        // diulang lagi (versi kecil) di CTA section sebagai benang merah visual.
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 800 400"
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden="true"
+      {/* Layer gambar/motif per slide, cross-fade halus antar slide aktif */}
+      {slides.map((s, idx) => (
+        <div
+          key={idx}
+          aria-hidden={idx !== activeIdx}
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            idx === activeIdx ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         >
-          <g stroke="currentColor" className="text-white" strokeOpacity="0.25" strokeWidth="1">
-            <line x1="640" y1="130" x2="560" y2="70" />
-            <line x1="640" y1="130" x2="720" y2="80" />
-            <line x1="640" y1="130" x2="760" y2="180" />
-            <line x1="640" y1="130" x2="700" y2="230" />
-            <line x1="640" y1="130" x2="600" y2="220" />
-            <line x1="640" y1="130" x2="680" y2="40" />
-            <line x1="140" y1="320" x2="60" y2="280" />
-            <line x1="140" y1="320" x2="90" y2="370" />
-            <line x1="140" y1="320" x2="200" y2="350" />
-            <line x1="140" y1="320" x2="170" y2="260" />
-            <line x1="640" y1="130" x2="140" y2="320" strokeOpacity="0.12" />
-          </g>
-          <g className="text-white" fill="currentColor" fillOpacity="0.35">
-            <circle cx="560" cy="70" r="3" />
-            <circle cx="720" cy="80" r="3" />
-            <circle cx="760" cy="180" r="3" />
-            <circle cx="700" cy="230" r="3" />
-            <circle cx="600" cy="220" r="3" />
-            <circle cx="680" cy="40" r="3" />
-            <circle cx="60" cy="280" r="3" />
-            <circle cx="90" cy="370" r="3" />
-            <circle cx="200" cy="350" r="3" />
-            <circle cx="170" cy="260" r="3" />
-          </g>
-          <g className="text-brand-gold-300" fill="currentColor">
-            <circle cx="640" cy="130" r="6" />
-            <circle cx="140" cy="320" r="5" />
-          </g>
-        </svg>
-      )}
+          {s.image_url ? (
+            <>
+              <img
+                src={s.image_url}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* Overlay gelap supaya teks putih tetap terbaca di atas foto apa pun */}
+              <div className="absolute inset-0 bg-brand-green-900/70" />
+            </>
+          ) : (
+            <HeroNetworkMotif />
+          )}
+        </div>
+      ))}
 
       {/* Wave divider — transisi halus ke StatsSection (bg-neutral-50) di bawahnya */}
       <div className="absolute bottom-0 inset-x-0 text-neutral-50 pointer-events-none leading-none">
@@ -109,6 +166,28 @@ function HeroSection() {
           <path fill="currentColor" d="M0,24 C240,40 480,8 720,16 C960,24 1200,40 1440,20 L1440,48 L0,48 Z" />
         </svg>
       </div>
+
+      {/* Tombol Prev/Next — full-bleed relatif ke section, cuma tampil kalau carousel */}
+      {/* {isCarousel && (
+        <>
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label="Slide sebelumnya"
+            className="hidden sm:flex items-center justify-center absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-colors duration-200"
+          >
+            <ArrowIcon className="w-5 h-5 rotate-180" />
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label="Slide berikutnya"
+            className="hidden sm:flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-colors duration-200"
+          >
+            <ArrowIcon className="w-5 h-5" />
+          </button>
+        </>
+      )} */}
 
       <div className="container-site relative py-20 lg:py-28">
         <div className="max-w-2xl">
@@ -143,6 +222,25 @@ function HeroSection() {
               </CTALink>
             )}
           </div>
+
+          {/* Dots — cuma tampil kalau carousel (>1 slide) */}
+          {isCarousel && (
+            <div className="flex items-center gap-2 mt-10" role="tablist" aria-label="Navigasi slide hero">
+              {slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => goTo(idx)}
+                  role="tab"
+                  aria-selected={idx === activeIdx}
+                  aria-label={`Ke slide ${idx + 1}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === activeIdx ? "w-7 bg-brand-gold-400" : "w-2 bg-white/40 hover:bg-white/60"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

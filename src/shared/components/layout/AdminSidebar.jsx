@@ -173,7 +173,7 @@ export default function AdminSidebar({ onClose }) {
             <img
               src={logoUrl}
               alt="Logo PW IPM Jawa Barat"
-              className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-white/25"
+              className="w-9 h-9 object-cover shrink-0"
             />
           ) : (
             <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm ring-2 ring-white/25 flex items-center justify-center text-white font-display font-bold text-sm shrink-0">

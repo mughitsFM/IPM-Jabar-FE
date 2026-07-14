@@ -89,4 +89,10 @@ export const artikelPimpinanService = {
 
   tolak: (id, catatan) =>
     apiClient.post(`/admin/artikel-pimpinan/${id}/tolak/`, { catatan }).then((r) => r.data),
+
+  nonaktifkan: (id) =>
+    apiClient.post(`/admin/artikel-pimpinan/${id}/nonaktifkan/`).then((r) => r.data),
+
+  aktifkan: (id) =>
+    apiClient.post(`/admin/artikel-pimpinan/${id}/aktifkan/`).then((r) => r.data),
 };

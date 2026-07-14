@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Button from "@/shared/components/ui/Button";
 import BottomSheetModal from "@/shared/components/ui/BottomSheetModal";
 import { formatShort } from "@/shared/utils/formatDate";
+import { useTandaiNotifikasiEntitas } from "@/features/notifikasi/hooks/useNotifikasi";
 import { useTandaiSuratDibaca, useKirimSurat } from "../hooks/useSurat";
 import SuratForm from "./SuratForm";
 
@@ -10,10 +11,17 @@ export default function SuratDetailPanel({ surat, currentUid, onClose }) {
   const [showBalas, setShowBalas] = useState(false);
   const tandaiDibaca = useTandaiSuratDibaca();
   const kirimBalasan = useKirimSurat();
+  const tandaiNotif = useTandaiNotifikasiEntitas();
 
   useEffect(() => {
     if (surat && currentUid && !surat.dibaca_oleh?.includes(currentUid)) {
       tandaiDibaca.mutate(surat.id);
+    }
+    // Selain menandai surat itu sendiri terbaca (di atas), tandai juga
+    // notifikasi "surat_masuk" terkait terbaca — mencakup baik surat yang
+    // dibuka langsung dari list maupun lewat deep-link notifikasi.
+    if (surat?.id) {
+      tandaiNotif.mutate([{ tipe: "surat_masuk", entity_id: surat.id }]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [surat?.id]);
