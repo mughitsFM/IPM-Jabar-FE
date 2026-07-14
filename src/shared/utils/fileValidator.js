@@ -6,14 +6,14 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 const ALLOWED_EXTENSIONS = ["pdf", "docx", "jpg", "jpeg", "png"];
-const MAX_SIZE_SURAT_MB = 10;
-const MAX_SIZE_SURAT_BYTES = MAX_SIZE_SURAT_MB * 1024 * 1024;
-const MAX_SIZE_BYTES = 1024 * 1024;
+
+const BYTES_PER_MB = 1024 * 1024;
+
+const MAX_SIZE_MB = 10;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * BYTES_PER_MB;
 
 /**
  * Validasi file lampiran pengaduan.
- * @param {File} file
- * @returns {{ valid: boolean, error: string | null }}
  */
 export function validateLampiran(file) {
   if (!file) return { valid: true, error: null };
@@ -24,7 +24,7 @@ export function validateLampiran(file) {
   }
 
   if (file.size > MAX_SIZE_BYTES) {
-    return { valid: false, error: "Ukuran file maksimal 5 MB" };
+    return { valid: false, error: `Ukuran file maksimal ${MAX_SIZE_MB} MB` };
   }
 
   return { valid: true, error: null };
@@ -32,6 +32,8 @@ export function validateLampiran(file) {
 
 /**
  * Validasi file gambar (thumbnail berita / foto profil).
+ * Ukuran TIDAK dibatasi — gambar akan dikompres & diresize otomatis
+ * ke WebP oleh Cloudinary saat upload, jadi ukuran asli tidak relevan.
  */
 export function validateGambar(file) {
   if (!file) return { valid: true, error: null };
@@ -41,24 +43,18 @@ export function validateGambar(file) {
     return { valid: false, error: "Gunakan format gambar JPG, PNG, atau WebP" };
   }
 
-  if (file.size > MAX_SIZE_BYTES) {
-    return { valid: false, error: "Ukuran gambar maksimal 5 MB" };
-  }
-
   return { valid: true, error: null };
 }
 
 /** Ukuran file ke string yang mudah dibaca, misal "1.2 MB" */
 export function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < BYTES_PER_MB) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / BYTES_PER_MB).toFixed(1)} MB`;
 }
 
 /**
  * Validasi lampiran surat resmi — PDF-only, maksimal 10 MB.
- * @param {File} file
- * @returns {{ valid: boolean, error: string|null }}
  */
 export function validateLampiranPDF(file) {
   if (!file) {
@@ -67,11 +63,11 @@ export function validateLampiranPDF(file) {
   if (file.type !== "application/pdf") {
     return { valid: false, error: "Lampiran surat harus berupa file PDF." };
   }
-  if (file.size > MAX_SIZE_SURAT_BYTES) {
-    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+  if (file.size > MAX_SIZE_BYTES) {
+    const sizeMb = (file.size / BYTES_PER_MB).toFixed(2);
     return {
       valid: false,
-      error: `Ukuran file melebihi batas maksimal ${MAX_SIZE_SURAT_MB} MB (ukuran saat ini: ${sizeMb} MB).`,
+      error: `Ukuran file melebihi batas maksimal ${MAX_SIZE_MB} MB (ukuran saat ini: ${sizeMb} MB).`,
     };
   }
   return { valid: true, error: null };
